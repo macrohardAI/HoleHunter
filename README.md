@@ -58,6 +58,27 @@ python src/models/train.py
 python app/predict.py --image path/to/image.jpg
 ```
 
+## ✏️ Making Changes
+
+```bash
+# Checkouting to a new branch
+git checkout -b <branch_name>
+
+# Make your changes...
+
+# It's best to pull first when you work with others within the same branch to avoid conflict
+git pull
+
+# Stages changed file to git
+git add <file1> <file2> ...
+
+# Commit your change
+git commit -m "<short description about this change>"
+
+# Push your commit to remote branch
+git push origin <branch_name>
+```
+
 ## 📂 Project Structure
 
 ```
