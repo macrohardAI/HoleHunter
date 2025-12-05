@@ -13,7 +13,12 @@ An Introduction to AI project that uses Convolutional Neural Network (CNN) to cl
 ### Installation
 
 ```bash
-pip install -r requirements.txt
+# Install and set Python version
+pyenv install 3.12
+pyenv local 3.12
+
+# Verify installation
+python --version # should be 3.12
 ```
 
 ## 🔧 Usage
