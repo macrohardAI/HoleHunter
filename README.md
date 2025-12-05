@@ -10,16 +10,43 @@ An Introduction to AI project that uses Convolutional Neural Network (CNN) to cl
 
 ## 🚀 Getting Started
 
-### Installation
+### Clone the repository
 
 ```bash
-# Install and set Python version
-pyenv install 3.12
-pyenv local 3.12
-
-# Verify installation
-python --version # should be 3.12
+https://github.com/macrohardAI/HoleHunter.git
+cd HoleHunter
 ```
+
+### Installation
+
+- Install and set Python 3.12
+    ```bash
+    pyenv install 3.12
+    pyenv local 3.12
+
+    # Verify installation
+    python --version # should be 3.12
+    ```
+
+- Create YOUR OWN virtual environment
+    ```bash
+    python -m venv .venv
+
+    # Activate virtual environment
+    source .venv/bin/activate
+    
+    # Or on Windows:
+    .venv\Scripts\activate
+    ```
+
+- Install dependencies
+    ```bash
+    # Upgrade pip
+    pip install --upgrade pip
+
+    # Install required packages
+    pip install -r requirements.txt
+    ```
 
 ## 🔧 Usage
 
