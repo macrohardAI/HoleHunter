@@ -8,7 +8,7 @@ An Introduction to AI project that uses Convolutional Neural Network (CNN) to cl
 - GPS metadata extraction from images
 - Location data storage in SQLite database
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Installation
 
@@ -16,7 +16,7 @@ An Introduction to AI project that uses Convolutional Neural Network (CNN) to cl
 pip install -r requirements.txt
 ```
 
-## Usage
+## 🔧 Usage
 
 ```bash
 # Train model
