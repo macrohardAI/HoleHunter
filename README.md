@@ -13,7 +13,14 @@ An Introduction to AI project that uses Convolutional Neural Network (CNN) to cl
 ### Clone the repository
 
 ```bash
-https://github.com/macrohardAI/HoleHunter.git
+git clone https://github.com/macrohardAI/HoleHunter.git
+cd HoleHunter
+```
+
+Or if using SSH:
+
+```bash
+git clone git@github.com:macrohardAI/HoleHunter.git
 cd HoleHunter
 ```
 
@@ -27,6 +34,9 @@ cd HoleHunter
     # Verify installation
     python --version # should be 3.12
     ```
+
+> [!TIP]
+> See [Pyenv installation docs](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation) if you haven't install it on your system.
 
 - Create YOUR OWN virtual environment
     ```bash
