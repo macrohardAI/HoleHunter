@@ -18,4 +18,4 @@ class Config:
     BASE_MODEL: str = "mobilenetv2"
 
     # Classes
-    CLASS_NAMES: list = ['no_hole', 'hole']
+    CLASS_NAMES: list = ['severe', 'medium', 'normal']

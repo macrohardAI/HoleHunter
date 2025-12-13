@@ -23,7 +23,7 @@ def prepare_dataset(
     Prepare dataset by splitting into train/val/test and organizing folders
 
     Args:
-        raw_data_dir: Directory containing raw/hole and raw/no_hole folders
+        raw_data_dir: Directory containing class folders (e.g., raw/berlubang, raw/rusak_ringan, raw/normal)
         processed_dir: Output directory for processed data
         train_split: Proportion of data for training (0.7 = 70%)
         val_split: Proportion for validation (0.15 = 15%)
@@ -35,17 +35,29 @@ def prepare_dataset(
     random.seed(seed)
 
     print("=" * 60)
-    print("Data Preparation Script")
+    print("Data Preparation Script (Multi-Class)")
     print("=" * 60)
 
     # Validate splits
     if abs(train_split + val_split + test_split - 1.0) > 0.001:
         raise ValueError("Splits must sum to 1.0")
 
-    # Create directory structure
-    splits = ['train', 'validation', 'test']
-    classes = ['hole', 'no_hole']
+    raw_path = Path(raw_data_dir)
+    if not raw_path.exists():
+        raise ValueError(f"Raw data directory not found: {raw_data_dir}")
 
+    # Get all class folders
+    classes = [d.name for d in raw_path.iterdir() if d.is_dir()]
+    classes.sort()  # Sort for consistency
+
+    if not classes:
+        raise ValueError(f"No class folders found in {raw_data_dir}")
+
+    print(f"Found {len(classes)} classes: {', '.join(classes)}")
+
+    splits = ['train', 'validation', 'test']
+
+    # Create directory structure
     for split in splits:
         for cls in classes:
             path = Path(processed_dir) / split / cls
@@ -64,7 +76,7 @@ def prepare_dataset(
             continue
 
         # Get image files
-        image_extensions = {'.jpg', '.jpeg', '.png', '.bmp'}
+        image_extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.heic'}
         images = [
             f for f in raw_class_dir.iterdir()
             if f.suffix.lower() in image_extensions
@@ -137,7 +149,7 @@ def prepare_dataset(
     print("\n" + "=" * 60)
     print("Next steps:")
     print("1. Verify the data splits look correct")
-    print("2. Run: python src/models/train.py")
+    print("2. Run: python train.py")
     print("=" * 60)
 
 
@@ -149,16 +161,24 @@ def verify_dataset(processed_dir='data/processed'):
     print("Dataset Verification")
     print("=" * 60)
 
-    splits = ['train', 'validation', 'test']
-    classes = ['hole', 'no_hole']
+    processed_path = Path(processed_dir)
+    splits = sorted([d.name for d in processed_path.iterdir() if d.is_dir()])
+
+    if not splits:
+        print(f"No splits found in {processed_dir}")
+        return
 
     total_images = 0
 
     for split in splits:
         print(f"\n{split.upper()}:")
+        split_path = processed_path / split
         split_total = 0
+
+        classes = sorted([d.name for d in split_path.iterdir() if d.is_dir()])
+
         for cls in classes:
-            path = Path(processed_dir) / split / cls
+            path = split_path / cls
             if path.exists():
                 count = len(list(path.glob('*')))
                 print(f"  {cls}: {count} images")
@@ -173,18 +193,24 @@ def verify_dataset(processed_dir='data/processed'):
     print("=" * 60)
 
 
-def create_sample_dataset(output_dir='data/raw', num_samples_per_class=10):
+def create_sample_dataset(output_dir='data/raw', classes_config=None, num_samples_per_class=10):
     """
     Create a dummy dataset for testing (when you don't have real data yet)
     Creates random colored images for testing the pipeline
+
+    Args:
+        output_dir: Output directory
+        classes_config: List of class names. Default: ['berlubang', 'rusak_ringan', 'normal']
+        num_samples_per_class: Number of samples to create per class
     """
+    if classes_config is None:
+        classes_config = ['severe', 'medium', 'normal']
+
     print("\n" + "=" * 60)
     print("Creating Sample Dataset (for testing only)")
     print("=" * 60)
 
-    classes = ['hole', 'no_hole']
-
-    for cls in classes:
+    for cls in classes_config:
         class_dir = Path(output_dir) / cls
         class_dir.mkdir(parents=True, exist_ok=True)
 
@@ -201,7 +227,7 @@ def create_sample_dataset(output_dir='data/raw', num_samples_per_class=10):
         print(f"✅ Created {num_samples_per_class} sample images for '{cls}'")
 
     print("\n⚠️  Note: These are dummy images for testing the pipeline only!")
-    print("Replace with real road hole images before actual training.")
+    print("Replace with real road condition images before actual training.")
 
 
 if __name__ == "__main__":
@@ -209,7 +235,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Prepare dataset for training')
     parser.add_argument('--raw-dir', default='data/raw',
-                        help='Directory with raw images')
+                        help='Directory with raw images organized by class')
     parser.add_argument('--output-dir', default='data/processed',
                         help='Output directory for processed data')
     parser.add_argument('--train-split', type=float, default=0.7,

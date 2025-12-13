@@ -50,15 +50,23 @@ def predict_image(model_path: str, image_path: str, config: Config = None):
         print(f"Image: {Path(image_path).name}")
         print(f"Classification: {result['class']}")
         print(f"Confidence: {result['confidence']:.2%}")
-        print(f"\nProbabilities:")
-        for class_name, prob in result['probabilities'].items():
-            print(f"  - {class_name}: {prob:.4f}")
+        print(f"\nProbabilities for all classes:")
+        sorted_probs = sorted(result['probabilities'].items(), key=lambda x: x[1], reverse=True)
+        for class_name, prob in sorted_probs:
+            bar_length = int(prob * 30)  # Visual bar representation
+            bar = "█" * bar_length + "░" * (30 - bar_length)
+            print(f"  {class_name:20s}: [{bar}] {prob:.4f} ({prob*100:.2f}%)")
         print("=" * 50)
 
         # Display image
-        img = Image.open(image_path)
-        viz = Visualizer()
-        viz.show_predictions([np.array(img)], [result])
+        try:
+            img = Image.open(image_path)
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+            viz = Visualizer()
+            viz.show_predictions([np.array(img)], [result])
+        except Exception as e:
+            print(f"⚠️  Could not display image: {e}")
 
     return result
 
