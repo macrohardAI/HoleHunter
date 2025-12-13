@@ -8,14 +8,15 @@ class Config:
     DATA_DIR: str = "./data"
     MODEL_DIR: str = "./models"
 
-    # Model parameters
     IMG_SIZE: tuple = (224, 224)
-    BATCH_SIZE: int = 32
-    EPOCHS: int = 50
-    LEARNING_RATE: float = 0.001
+    BATCH_SIZE: int = 32  # Smaller batch size for more stable training
+    EPOCHS: int = 80  # More epochs to allow better convergence
+    LEARNING_RATE: float = 0.001  # Lower learning rate for more stable training
 
-    # Model selection: 'resnet50', 'mobilenetv2'
     BASE_MODEL: str = "mobilenetv2"
 
     # Classes
     CLASS_NAMES: list = ['severe', 'medium', 'normal']
+
+    # Increase weight for severe class since it's being misclassified
+    CLASS_WEIGHTS: dict = {0: 2.5, 1: 1.0, 2: 1.5}  # severe, medium, normal

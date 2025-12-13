@@ -39,7 +39,7 @@ class Trainer:
             # Stop training if validation loss doesn't improve
             EarlyStopping(
                 monitor='val_loss',
-                patience=10,
+                patience=15,
                 restore_best_weights=True,
                 verbose=1
             ),
@@ -47,8 +47,8 @@ class Trainer:
             # Reduce learning rate if validation loss plateaus
             ReduceLROnPlateau(
                 monitor='val_loss',
-                factor=0.5,
-                patience=5,
+                factor=0.3,
+                patience=7,
                 verbose=1,
                 min_lr=1e-7
             ),
@@ -89,6 +89,7 @@ class Trainer:
             epochs=self.config.EPOCHS,
             validation_data=val_generator,
             callbacks=callbacks,
+            class_weight=self.config.CLASS_WEIGHTS,  # Apply class weights
             verbose=1
         )
 
