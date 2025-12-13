@@ -16,7 +16,7 @@ class Config:
     BASE_MODEL: str = "mobilenetv2"
 
     # Classes
-    CLASS_NAMES: list = ['severe', 'medium', 'normal']
+    CLASS_NAMES: list = ['medium', 'normal', 'severe']
 
     # Increase weight for severe class since it's being misclassified
-    CLASS_WEIGHTS: dict = {0: 2.5, 1: 1.0, 2: 1.5}  # severe, medium, normal
+    CLASS_WEIGHTS: dict = {0: 1.0, 1: 1.5, 2: 2.5}  # severe, medium, normal

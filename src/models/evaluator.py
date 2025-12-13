@@ -73,15 +73,22 @@ class ModelEvaluator:
             # Load and preprocess image
             img = Image.open(image_path).convert('RGB')
             img = img.resize(self.config.IMG_SIZE, Image.Resampling.LANCZOS)
-            img_array = np.array(img) / 255.0
+
+            # --- PERBAIKAN DI SINI ---
+            img_array = np.array(img)  # JANGAN DIBAGI 255.0
+            # -------------------------
+
             img_array = np.expand_dims(img_array, axis=0)
-            
+
+            # Optional: Debugging (Bisa dihapus nanti)
+            # print(f"Debug Min: {img_array.min()}, Max: {img_array.max()}")
+
             # Make prediction
             prediction = self.model.predict(img_array, verbose=0)
             confidence = np.max(prediction)
             class_idx = np.argmax(prediction)
             class_name = self.config.CLASS_NAMES[class_idx]
-            
+
             result = {
                 'class': class_name,
                 'confidence': float(confidence),
@@ -90,9 +97,9 @@ class ModelEvaluator:
                     for i in range(len(self.config.CLASS_NAMES))
                 }
             }
-            
+
             return result
-            
+
         except Exception as e:
             print(f"Error predicting on {image_path}: {e}")
             return None

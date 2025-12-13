@@ -204,7 +204,7 @@ def create_sample_dataset(output_dir='data/raw', classes_config=None, num_sample
         num_samples_per_class: Number of samples to create per class
     """
     if classes_config is None:
-        classes_config = ['severe', 'medium', 'normal']
+        classes_config = ['medium', 'normal', 'severe']
 
     print("\n" + "=" * 60)
     print("Creating Sample Dataset (for testing only)")
