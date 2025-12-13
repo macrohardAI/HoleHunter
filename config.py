@@ -15,7 +15,7 @@ class Config:
     LEARNING_RATE: float = 0.001
 
     # Model selection: 'resnet50', 'mobilenetv2'
-    BASE_MODEL: str = "resnet50"
+    BASE_MODEL: str = "mobilenetv2"
 
     # Classes
     CLASS_NAMES: list = ['no_hole', 'hole']
