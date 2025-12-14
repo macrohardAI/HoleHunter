@@ -41,7 +41,7 @@ class MapGenerator:
 
     @staticmethod
     def generate_map(new_predictions, output_file='peta_sebaran_lubang.html'):
-        print(f"\n🗺️  Memproses data peta (Filter + Foto)...")
+        print(f"\n  Memproses data peta (Filter + Foto)...")
 
         # 1. Load History & Filter Duplikat
         history_points = MapGenerator.load_history()
@@ -70,10 +70,10 @@ class MapGenerator:
 
         if new_points:
             MapGenerator.save_history(total_points)
-            print(f"✅ Menambahkan {len(new_points)} titik baru.")
+            print(f" Menambahkan {len(new_points)} titik baru.")
 
         if not total_points:
-            print("⚠️ Tidak ada data GPS. Peta batal dibuat.")
+            print("!!! Tidak ada data GPS. Peta batal dibuat.")
             return
 
         # 2. Setup Peta
@@ -86,7 +86,7 @@ class MapGenerator:
         layer_medium = folium.FeatureGroup(name='Medium (Sedang)', show=True)
         layer_normal = folium.FeatureGroup(name='Normal (Aman)', show=False)
 
-        print("   ⏳ Menanamkan gambar ke peta...")
+        print("    Menanamkan gambar ke peta...")
 
         for point in total_points:
             cls = point['class'].lower()
@@ -133,4 +133,4 @@ class MapGenerator:
         folium.LayerControl(collapsed=False).add_to(m)
 
         m.save(output_file)
-        print(f"✅ Peta disimpan di: {output_file}")
+        print(f" Peta disimpan di: {output_file}")
