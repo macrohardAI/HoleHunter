@@ -327,7 +327,7 @@ def evaluate(self, test_generator) -> dict:
     true_labels = test_generator.labels
 ```
 
-proses evaluasi dilakukan dengan cara mengenerate prediksi untuk seluruh test set lalu mengonversi probabilitas ke class labels dengan `argmax`. Terakhir, diekstrak true labels dari generator.
+Proses evaluasi dilakukan dengan cara mengenerate prediksi untuk seluruh test set lalu mengonversi probabilitas ke class labels dengan `argmax`. Terakhir, diekstrak true labels dari generator.
 
 ### **2.3 Perhitungan Metrik**
 
@@ -452,7 +452,7 @@ def setup_callbacks(self, model_dir='./models') -> list:
         return callbacks
 ```
 
-`ModelCheckpoint` menyimpan model terbaik berdasarkan validation accuracy. Hanya model dengan  performa terbaik yang disimpan untuk mencegah overfitting. `EarlyStopping` menghentikan training jika validation los tidak membaik setelah 15 epochs. Parameter `restore_best_weights = True` mengembalikan bobot  terbaik saat training dihentikan. `ReduceLRONPlateau` mengurangi learning rate sebesar 30% jika validation loss plateau selama 7 epochs. Strategi ini membantu model menemukan minimum yang lebih baik dengan learning rate lebih kecil. `TwnsorBoard` adalah logging untuk visualisasi training di tensorBoard.
+`ModelCheckpoint` menyimpan model terbaik berdasarkan validation accuracy. Hanya model dengan  performa terbaik yang disimpan untuk mencegah overfitting. `EarlyStopping` menghentikan training jika validation loss tidak membaik setelah 15 epochs. Parameter `restore_best_weights = True` mengembalikan bobot  terbaik saat training dihentikan. `ReduceLRONPlateau` mengurangi learning rate sebesar 30% jika validation loss plateau selama 7 epochs. Strategi ini membantu model menemukan minimum yang lebih baik dengan learning rate lebih kecil. `TwnsorBoard` adalah logging untuk visualisasi training di tensorBoard.
 
 ### **3.3 Main Training Loop**
 
