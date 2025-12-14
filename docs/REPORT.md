@@ -232,7 +232,7 @@ def build_base_model(self) -> tf.keras.Model:
 ```
 
 Method `build_base_model()` memuat model pre-trained dari Keras Aplications.
-`input_shape` menentukan dimensi input gambar seperti tinggi, lebaar, dan channel RGB. `include_top` di-set `false` untuk menghilangkan fully-connected layer asli yang memungkinkan custom head.
+`input_shape` menentukan dimensi input gambar seperti tinggi, lebar, dan channel RGB. `include_top` di-set `false` untuk menghilangkan fully-connected layer asli yang memungkinkan custom head.
 
 ### **1.3 Fine-Tuning**
 
@@ -266,7 +266,7 @@ x = base_model(x, training=False)
 x = layers.GlobalAveragePooling2D()(x)
 ```
 
-`training = False` memastikan batch normalization layers menggunakan statistik fixed dan `GlobalAveragePooling2d` mengkonversi featuree maps menjadi vektor 1D dengan averaging spatial dimensionts untuk mengurangi parameter  dan mencegah overfitting. 
+`training = False` memastikan batch normalization layers menggunakan statistik fixed dan `GlobalAveragePooling2d` mengkonversi feature maps menjadi vektor 1D dengan averaging spatial dimensionts untuk mengurangi parameter dan mencegah overfitting. 
 
 ### **1.6 Classification Head**
 
@@ -572,7 +572,7 @@ class Config:
     CLASS_WEIGHTS: dict = {0: 1.0, 1: 1.5, 2: 2.5}  # severe, medium, normal
 ```
 
-File ini berfunsgi untuk menyimpan seluruh parameter sistem. `DATA_DIR` menentukan lokasi root directory dan `MODEL_DIR` menentukan lokasi penyimpanan model trained dan checkpoint. Dimesni input ditetapkan 224x224 px yang merupakan standar MobileNetV2. `BATCH_SIZE` sebesar 32 dipilih untuk stabilitas komputasi gradien efisiensi memori, serta regularisasi efek. `EPOCHS` sebesar 80 memberikan waktu  cukup untuk model konvergen. `LEARNING_RATE` sebesar 0.001 sebagai default optimal untuk Adam Optimizer. 
+File ini berfunsgi untuk menyimpan seluruh parameter sistem. `DATA_DIR` menentukan lokasi root directory dan `MODEL_DIR` menentukan lokasi penyimpanan model trained dan checkpoint. Dimensi input ditetapkan 224x224 px yang merupakan standar MobileNetV2. `BATCH_SIZE` sebesar 32 dipilih untuk stabilitas komputasi gradien efisiensi memori, serta regularisasi efek. `EPOCHS` sebesar 80 memberikan waktu cukup untuk model konvergen. `LEARNING_RATE` sebesar 0.001 sebagai default optimal untuk Adam Optimizer. 
 
 Weight assignment digunakan untuk mengatasi dataset yang tidak imbang menggunakan strategi pengaturan weigths sebagai berikut:
 - medium = 1.0
