@@ -582,9 +582,10 @@ Berdasarkan hasil training, model sudah sangat baik dan siap untuk digunakan. Da
 
 
 ## **Prediction Demo**
-![Demo Sistem](../assets/demo.gif)
-![Demo Sistem](../assets/demo.gif)
-![Demo Sistem](../assets/demo.gif)
+![Demo Sistem](../pred_demo1.png)
+![Demo Sistem](../pred_demo2.png)
+![Demo Sistem](../pred_demo3.png)
+![Demo Sistem](../pred_demo4.png)
 
 Sistem mengambil semua foto dari folder `bppselatanpredik/` kemudian dengan model AI yang telah dilatih sebelumnya akan membaca foto satu per satu. Model akan menebak tingkat kerusakan jalan dan mengklasifikasikannya ke tiga kelas yaitu medium, normal, atau severe. Setelah itu, sistem akan mengambil foto dengan metadata dan menandainya di peta interaktif dengan warna pin  berbeda-beda sesuai kelasnya.
 
