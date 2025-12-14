@@ -526,7 +526,7 @@ def confusion_matrix(self, test_generator) -> np.ndarray:
 
 Confusion matrix menunjukkan distribusi prediksi benar dan salah antar class.
 
-## **4. Package Initialization **
+## **4. Package Initialization**
 
 ### **`init.py`**
 
@@ -541,7 +541,7 @@ __all__ = ['ModelBuilder', 'Trainer', 'ModelEvaluator']
 
 File ini membuat directory `models/` menjadi Python package dengan membaca class dari submodules Ke package level dan mendefinisikan public API yang akan di-export saat `from models import *`.
 
-## **5. Konfigurasi Sistem **
+## **5. Konfigurasi Sistem**
 
 ### **`confiig.py`**
 
@@ -572,7 +572,7 @@ Weight assignment digunakan untuk mengatasi dataset yang tidak imbang menggunaka
 - normal = 1.5
 - severe = 2.5
 
-## **6. Helpers **
+## **6. Helpers**
 
 ### **`6.1 gps_utils.py`**
 
