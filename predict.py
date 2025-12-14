@@ -24,22 +24,22 @@ def predict_image(model_path: str, image_path: str, config: Config = None):
     if not model_path.endswith('.keras') and not model_path.endswith('.h5'):
         model_path = model_path + '.keras'
 
-    print(f"\n🔍 Loading model from: {model_path}")
+    print(f"\n Loading model from: {model_path}")
     try:
         model = tf.keras.models.load_model(model_path)
     except ValueError as e:
         if "Unknown layer" in str(e):
-            print(f"⚠️  Error loading model. Trying to rebuild from architecture...")
+            print(f"!!!  Error loading model. Trying to rebuild from architecture...")
             # Fallback: rebuild model if loading fails
             from models.model_builder import ModelBuilder
             builder = ModelBuilder(config)
             model = builder.build_full_model()
             model = builder.compile_model(model)
-            print("⚠️  Model rebuilt. Note: weights may not be loaded.")
+            print("!!!  Model rebuilt. Note: weights may not be loaded.")
         else:
             raise
 
-    print(f"📷 Predicting on: {image_path}")
+    print(f" Predicting on: {image_path}")
     evaluator = ModelEvaluator(model, config)
 
     result = evaluator.predict_single(image_path)
@@ -60,7 +60,7 @@ def predict_image(model_path: str, image_path: str, config: Config = None):
             print(f"  {class_name:20s}: [{bar}] {prob:.4f} ({prob*100:.2f}%)")
         print("=" * 50)
 
-        print("\n🗺️  Updating Map...")
+        print("\n  Updating Map...")
         MapGenerator.generate_map([result], 'laporan_peta_kerusakan.html')
         print("=" * 50)
 
@@ -72,7 +72,7 @@ def predict_image(model_path: str, image_path: str, config: Config = None):
             viz = Visualizer()
             viz.show_predictions([np.array(img)], [result])
         except Exception as e:
-            print(f"⚠️  Could not display image: {e}")
+            print(f"!!!  Could not display image: {e}")
 
     return result
 
@@ -85,17 +85,17 @@ def predict_batch(model_path: str, image_dir: str, config: Config = None):
     if not model_path.endswith('.keras') and not model_path.endswith('.h5'):
         model_path = model_path + '.keras'
 
-    print(f"\n🔍 Loading model from: {model_path}")
+    print(f"\n Loading model from: {model_path}")
     try:
         model = tf.keras.models.load_model(model_path)
     except ValueError as e:
         if "Unknown layer" in str(e):
-            print(f"⚠️  Error loading model. Trying to rebuild from architecture...")
+            print(f"!!!  Error loading model. Trying to rebuild from architecture...")
             from models.model_builder import ModelBuilder
             builder = ModelBuilder(config)
             model = builder.build_full_model()
             model = builder.compile_model(model)
-            print("⚠️  Model rebuilt. Note: weights may not be loaded.")
+            print("!!!  Model rebuilt. Note: weights may not be loaded.")
         else:
             raise
 
@@ -104,10 +104,10 @@ def predict_batch(model_path: str, image_dir: str, config: Config = None):
     images = [f for f in image_dir.iterdir() if f.suffix.lower() in image_extensions]
 
     if not images:
-        print(f"❌ No images found in {image_dir}")
+        print(f"X No images found in {image_dir}")
         return
 
-    print(f"📷 Found {len(images)} images to predict")
+    print(f" Found {len(images)} images to predict")
 
     evaluator = ModelEvaluator(model, config)
     results = []
@@ -126,7 +126,7 @@ def predict_batch(model_path: str, image_dir: str, config: Config = None):
                 if img.mode != 'RGB':
                     img = img.convert('RGB')
                 images_array.append(np.array(img))
-                print(f"  ✅ {img_path.name}: {result['class']} ({result['confidence']:.2%})")
+                print(f"   {img_path.name}: {result['class']} ({result['confidence']:.2%})")
         except Exception as e:
             print(f"  ⚠️  {img_path.name}: Error - {str(e)}")
             continue
