@@ -25,8 +25,12 @@ Klasifikasi jalan berlubang menggunakan teknik klasifikasi gambar dengan lebih d
 - Normal
 - Severe (Rusak berat)
 
-## **2.1 Image Normalization**
+## **2.1 MobileNetV2**
+Kami menggunakan transfer learning dengan MobileNetV2 sebagai base model karena efisiensinya untuk deployments  mobile dan akurasi yang  lebih tinggi dari model lain.
 
+### **1. Input (224×224×3)**
+
+### **2. Rescalling Normalization**
 Input gambar dinormalisasi ke range [-1,1] sesuai dengan kebutuhan MobleNetV2.
 
 ### **`model_builder.py`**
@@ -34,30 +38,46 @@ Input gambar dinormalisasi ke range [-1,1] sesuai dengan kebutuhan MobleNetV2.
 # Line 47-48
 x = layers.Rescaling(1./127.5, offset=-1)(inputs)
 ```
-$$x_{\text{normalized}} = \frac{x}{127.5} - 1 = \frac{x - 127.5}{127.5}$$
+$$x_{\text{normalized}} = \frac{x}{127.5} - 1$$
 
-## **2.2 Weighted Loss Function**
+### **3. MobileNetV2 Base (32_224_f)**
 
-Dataset jalan berlubang yang kami gunakan memiliki ketidakseimbangan kelas. Kami mengatasi masalah ini dengan menggunakan weighted loss function dan memberikan bobot tertinggi untuk kelas severe (2.5) untuk meningkatkan sensitivitas. 
+MobileNetV2 mengubah gambar menjadi fitur-fitur penting seperti tekstur jalan atau luubang.
+
+### **4.Global Average Pooling**
+
+Mengubah feature map (7 x 7 x 1280) menjadi vektor 1D (1280)
 
 ### **`model_builder.py`**
 ```python
-# Line 84-86
-loss='categorical_crossentropy'
+# Line 56
+x = layers.GlobalAveragePooling2D()(x)
 ```
 
-$$\mathcal{L} = -\frac{1}{N} \sum_{i=1}^{N} \sum_{j=1}^{C} y_{ij} \cdot \log(\hat{y}_{ij})$$
+$$\text{GAP}(x) = \frac{1}{H \times W} \sum_{i=1}^{H} \sum_{j=1}^{W} x_{i,j,k}$$
+
+### **5. Dense (Kernel 1280x100, bias 100)**
+
+### **6. Activation**
+
+### **`model_builder.py`**
+```python
+# Line 68-69
+x = layers.Dense(100, activation='relu')(x)
+```
+
+$$y = \text{ReLU}(W \cdot x + b)$$
+$$\text{ReLU}(z) = \max(0, z)$$
 
 di mana:
-- $N$ = jumlah sampel dalam batch
-- $C = 3$ = jumlah kelas
-- $y_{ij}$ = label ground truth (one-hot encoded)
-- $\hat{y}_{ij}$ = probabilitas prediksi dari softmax
-- $w_j$ = class weight untuk kelas $j$
+- $W \in \mathbb{R}^{100 \times 1280}$
+- $x \in \mathbb{R}^{1280}$
+- $b \in \mathbb{R}^{100}$
+- $y \in \mathbb{R}^{100}$
 
-## **2.3 Softmax Output**
+### **7. Dropout**
 
-Output layer menggunakan siftmax activation untuk menghasilkan distrubusi probabilitas.
+### **8. Dense (Kernel 100x3, bias 3)**
 
 ### **`model_builder.py`**
 ```python
@@ -67,16 +87,39 @@ outputs = layers.Dense(
     activation='softmax'
 )(x)
 ```
+
 $$P(y = k | x) = \frac{e^{z_k}}{\sum_{j=1}^{C} e^{z_j}}$$
 
 di mana:
-- $z_k = W_k \cdot x + b_k$ (logit untuk kelas $k$)
+- $z_k = W_k \cdot x + b_k$
 - $C = 3$ (jumlah kelas)
 - $\sum_{k=1}^{3} P(y=k|x) = 1$
 
+### **9. Dense_1**
+
+Output terakhir model
+
+## **2.2 Loss Function**
+
+Dataset jalan berlubang yang kami gunakan memiliki ketidakseimbangan kelas. Kami mengatasi masalah ini dengan menggunakan weighted loss function dan memberikan bobot tertinggi untuk kelas severe (2.5) untuk meningkatkan sensitivitas. 
+
+### **`model_builder.py`**
+```python
+# Line 84-86
+loss='categorical_crossentropy'
+```
+
+$$\mathcal{L} = -\frac{1}{N} \sum_{i=1}^{N} \sum_{j=1}^{C} w_{ij} \cdot y_{ij} \cdot \log(\hat{y}_{ij})$$
+
+di mana:
+- $N$ = jumlah sampel dalam batch
+- $C = 3$ = jumlah kelas
+- $y_{ij}$ = label ground truth (one-hot encoded)
+- $\hat{y}_{ij}$ = probabilitas prediksi dari softmax
+- $w_j$ = class weight untuk kelas $j$
 
 
-## **4. Optimizer**
+## **2.3. Optimizer**
 
 ### **`model_builder.py`**
 ```python
@@ -114,7 +157,7 @@ $$\theta_t = \theta_{t-1} - \alpha \cdot \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \ep
 - $\beta_2 = 0.999$
 - $\epsilon = 10^{-7}$
 
-## **5. Evaluation Metrics**
+## **2.4 Evaluation Metrics**
 
 ### **`evaluator.py`**
 
@@ -128,8 +171,6 @@ metrics = {
     'f1': f1_score(true_labels, pred_labels, average='weighted')
 }
 ```
-
-#### **Rumus Matematika:**
 
 **Confusion Matrix (3×3):**
 
@@ -179,3 +220,5 @@ di mana:
 **Sumartha, N. N. C., Wijaya, I. G. P. S., & Bimantoro, F. (2024)**. Klasifikasi Citra Lubang pada Permukaan Jalan Beraspal dengan Metode Convolutional Neural Networks (CNN). *Journal of Computer Science and Informatics Engineering (J-Cosine), 8*(1).
 
 **Sandler, M., Howard, A., Zhu, M., Zhmoginov, A., & Chen, L. C. (2018)**. Mobilenetv2: Inverted residuals and linear bottlenecks. In *Proceedings of the IEEE conference on computer vision and pattern recognition* (pp. 4510-4520).
+
+**Xiang, Q., Wang, X., Li, R., Zhang, G., Lai, J., & Hu, Q. (2019, October)**. Fruit image classification based on Mobilenetv2 with transfer learning technique. In *Proceedings of the 3rd international conference on computer science and application engineering* (pp. 1-7).
