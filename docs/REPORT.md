@@ -205,7 +205,379 @@ di mana:
 
 ## Implementation
 
-<!-- Insert implementation -->
+## **1. Struktur Arsitektur Model **
+
+### **`model_builder.py`**
+
+### **1.1 Struktur Arsitektur Model**
+
+```python
+class ModelBuilder:
+    def __init__(self, config: Config):
+        self.config = config
+```
+
+Kelas ModelBuilder berfungsi sebagai factory untuk membangun model Deep Learning. Konstruktor menerima  objek config yang mengandung seluruh konfigurasi sistem dan hyperparameter untuk memastikan konsistensi konfigurasi seluruh komponen
+
+### **1.2 Pemilihan dan Konfigurasi Base Model**
+
+```python
+def build_base_model(self) -> tf.keras.Model:
+    if self.config.BASE_MODEL == 'resnet50':
+        base_model = keras.applications.ResNet50(
+            input_shape=(*self.config.IMG_SIZE, 3),
+            include_top=False,
+            weights='imagenet'
+        )
+```
+
+Method `build_base_model()` memuat model pre-trained dari Keras Aplications.
+`input_shape` menentukan dimensi input gambar seperti tinggi, lebaar, dan channel RGB. `include_top` di-set `false` untuk menghilangkan fully-connected layer asli yang memungkinkan custom head.
+
+### **1.3 Fine-Tuning**
+
+```python
+base_model = keras.applications.MobileNetV2(
+    input_shape=(*self.config.IMG_SIZE, 3),
+    include_top=False,
+    weights='imagenet',
+    alpha=0.35
+)
+base_model.trainable = False
+```
+
+MobileNetV2 menggunakan parameter `alpha = 0.35` untuk mengurangi jumlah parameter dan menghasilkan model yang lebih ringan dan cepat.
+
+### **1.4 Preprocessing Layer**
+
+```python
+if self.config.BASE_MODEL == 'resnet50':
+    x = keras.applications.resnet50.preprocess_input(inputs)
+elif self.config.BASE_MODEL == 'mobilenetv2':
+    x = layers.Rescaling(1./127.5, offset=-1)(inputs)
+```
+
+MPreprocessing disesuaikan dengan arsitektur base model. Karena menggunakan MobileNetV2, maka normalisasi ke range [-1,1] menggunakan layer `Rescaling`.
+
+### **1.5 Feature Extraction dan Pooling**
+
+```python
+x = base_model(x, training=False)
+x = layers.GlobalAveragePooling2D()(x)
+```
+
+`training = False` memastikan batch normalization layers menggunakan statistik fixed dan `GlobalAveragePooling2d` mengkonversi featuree maps menjadi vektor 1D dengan averaging spatial dimensionts untuk mengurangi parameter  dan mencegah overfitting. 
+
+### **1.6 Classification Head**
+
+```python
+x = layers.Dense(100, activation='relu')(x)
+x = layers.Dropout(0.2)(x)
+```
+
+### **1.7 Output Layer**
+
+```python
+outputs = layers.Dense(
+    len(self.config.CLASS_NAMES),
+    activation='softmax'
+)(x)
+```
+
+Menggunakan jumlah neurons sesuai jumlah kelas, aktivasi softmax untuk probabilitas multi-class, dan output berupa distribusi probabilitas dengan sum  = 1.0
+
+### **1.8 Kompilasi Model**
+
+```python
+def compile_model(self, model: tf.keras.Model) -> tf.keras.Model:
+    model.compile(
+        optimizer=keras.optimizers.Adam(
+            learning_rate=self.config.LEARNING_RATE,
+            clipnorm=1.0
+        ),
+        loss='categorical_crossentropy',
+        metrics=['accuracy']
+    )
+```
+
+`complie_model` digunakan untuk mengonfigurasi proses pembelajharan model dengan Adam Optimizer sebagai optimisasinya dan Categorical Crossentropy sebagai Loss Function untuk klasifikasi multi-class, serta accuracy sebagai metrik evaluasi.
+
+
+## **2. Evaluasi Model **
+
+### **`evaluator.py`**
+
+### **2.1 Struktur Model Evaluator**
+
+```python
+class ModelEvaluator:
+    def __init__(self, model: tf.keras.Model, config):
+        self.model = model
+        self.config = config
+```
+
+Kelas `ModelEvaluator` menerima trained model dan config object untuk melakukan berbagai jenis evaluasi.
+
+### **2.2 Evalusasi Komprehensif**
+
+```python
+def evaluate(self, test_generator) -> dict:
+    predictions = self.model.predict(test_generator)
+    pred_labels = np.argmax(predictions, axis=1)
+    true_labels = test_generator.labels
+```
+
+proses evaluasi dilakukan dengan cara mengenerate prediksi untuk seluruh test set lalu mengonversi probabilitas ke class leabels dengan `argmax`. Terakhir, diekstrak true labels dari generator.
+
+### **2.3 Perhitungan Metrik**
+
+```python
+metrics = {
+    'accuracy': accuracy_score(true_labels, pred_labels),
+    'precision': precision_score(true_labels, pred_labels, average='weighted'),
+    'recall': recall_score(true_labels, pred_labels, average='weighted'),
+    'f1': f1_score(true_labels, pred_labels, average='weighted')
+}
+```
+
+### **2.4 Classification Report**
+
+```python
+print(classification_report(
+    true_labels,
+    pred_labels,
+    target_names=self.config.CLASS_NAMES
+))
+```
+
+Report menampilkan precision, recall, F1-scrore untuk setiap class secara detail.
+
+### **2.5 Confusion Matrix**
+
+```python
+def confusion_matrix(self, test_generator) -> np.ndarray:
+    cm = confusion_matrix(true_labels, pred_labels)
+```
+
+Confusion matrix menunjukkan distribusi prediksi benar dan salah antar class.
+
+### **2.6 Prediksi Single Image**
+
+```python
+def predict_single(self, image_path: str) -> dict:
+        """Predict on a single image"""
+        try:
+            # Load and preprocess image
+            img = Image.open(image_path).convert('RGB')
+            img = img.resize(self.config.IMG_SIZE, Image.Resampling.LANCZOS)
+
+            # --- PERBAIKAN DI SINI ---
+            img_array = np.array(img)  # JANGAN DIBAGI 255.0
+            # -------------------------
+
+            img_array = np.expand_dims(img_array, axis=0)
+
+            # Optional: Debugging (Bisa dihapus nanti)
+            # print(f"Debug Min: {img_array.min()}, Max: {img_array.max()}")
+
+            # Make prediction
+            prediction = self.model.predict(img_array, verbose=0)
+            confidence = np.max(prediction)
+            class_idx = np.argmax(prediction)
+            class_name = self.config.CLASS_NAMES[class_idx]
+
+            result = {
+                'class': class_name,
+                'confidence': float(confidence),
+                'probabilities': {
+                    self.config.CLASS_NAMES[i]: float(prediction[0][i])
+                    for i in range(len(self.config.CLASS_NAMES))
+                }
+            }
+
+            return result
+```
+
+`predict_single` digunakan untuk melakukan inferensi pada satu citra jalan dengan cara memuat dan memproses gambar agar sesuai dengan format input MobileNetV2, melakukan prediksi menggunakan model CNN yang telah dilatih, lalu mengembalikan hasil klasifikasi berupa class kerusakan jalan, confidence score, dan probabilitas 
+
+## **3. Training **
+
+### **`trainer.py`**
+
+### **3.1 Struktur trainer**
+
+```python
+class Trainer:
+    def __init__(self, config: Config):
+        self.config = config
+        self.model = None
+        self.history = None
+```
+
+Kelas `Trainer` mengenkapsulasi seluruh proses training dengan menyimpan config, model, dan training history.
+
+### **3.2 Setup Callbacks**
+
+```python
+def setup_callbacks(self, model_dir='./models') -> list:
+        """Create ModelCheckpoint, EarlyStopping, ReduceLROnPlateau, TensorBoard"""
+        Path(model_dir).mkdir(parents=True, exist_ok=True)
+        
+        callbacks = [
+            # Save best model based on validation accuracy
+            ModelCheckpoint(
+                filepath=os.path.join(model_dir, 'best_model.keras'),
+                monitor='val_accuracy',
+                save_best_only=True,
+                verbose=1
+            ),
+
+            # Stop training if validation loss doesn't improve
+            EarlyStopping(
+                monitor='val_loss',
+                patience=15,
+                restore_best_weights=True,
+                verbose=1
+            ),
+
+            # Reduce learning rate if validation loss plateaus
+            ReduceLROnPlateau(
+                monitor='val_loss',
+                factor=0.3,
+                patience=7,
+                verbose=1,
+                min_lr=1e-7
+            ),
+
+            # TensorBoard logging
+            TensorBoard(
+                log_dir=os.path.join(model_dir, 'logs'),
+                histogram_freq=1
+            )
+        ]
+
+        return callbacks
+```
+
+`ModelCheckpoint` meyimpan model terbaik berdasarkan validation accuracy. Hanya model dengan  performa terbaik yang dsimpan untuk mencegah overfitting. `EarlyStopping` menghentikan training jika validation los tidak membaik setelah 15 epochs. Parameter `restore_best_weights = True` mengembalikan bobot  terbaik saat training dihentikan. `ReduceLRONPlateau` mengurangi learning rate sebesar 30% jika validation loss plateau selama 7 epochs. Strategi ini membantu model menemukan minimum yang lebih baik dengan learning rate lebih kecil. `TwnsorBoard` adalah logging untuk visualisasi training di tensorBoard.
+
+### **3.3 Main Traing Loop**
+
+```python
+def train(
+        self,
+        train_generator,
+        val_generator,
+        model_dir='./models'
+    ) -> History:
+        """Main training loop"""
+        print("=" * 60)
+        print("Starting Training")
+        print("=" * 60)
+
+        # Build and compile model
+        builder = ModelBuilder(self.config)
+        self.model = builder.build_full_model()
+        self.model = builder.compile_model(self.model)
+
+        print(self.model.summary())
+
+        # Setup callbacks
+        callbacks = self.setup_callbacks(model_dir)
+
+        # Train model
+        self.history = self.model.fit(
+            train_generator,
+            epochs=self.config.EPOCHS,
+            validation_data=val_generator,
+            callbacks=callbacks,
+            class_weight=self.config.CLASS_WEIGHTS,  # Apply class weights
+            verbose=1
+        )
+
+        print("=" * 60)
+        print("Training Complete!")
+        print("=" * 60)
+
+        return self.history
+```
+
+Training dimulai dengan build model menggunakan ModelBuilder lalu model di compile dengan optimizer dan loss function. Setelah itu model summary diprint untuk  verifikasi arsitektur.
+
+### **3.4 Model Saving**
+
+```python
+def save_model(self, path: str = './models/trained_model.keras') -> None:
+        """Save trained model in .keras format (Keras 3 compatible)"""
+        if self.model is None:
+            raise ValueError("No model to save. Train the model first.")
+
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
+
+        # Ensure path ends with .keras
+        if not path.endswith('.keras'):
+            path = path + '.keras'
+
+        self.model.save(path)
+        print(f"Model saved to {path}")
+```
+
+Model disimpan dalam format `.keras` yang menyimpan arsitektur model, bobot trained, optimizer state, dan compile configuration.
+
+### **2.5 Confusion Matrix**
+
+```python
+def confusion_matrix(self, test_generator) -> np.ndarray:
+    cm = confusion_matrix(true_labels, pred_labels)
+```
+
+Confusion matrix menunjukkan distribusi prediksi benar dan salah antar class.
+
+## **4. Package Initialization **
+
+### **`init.py`**
+
+```python
+"""Models package"""
+from .model_builder import ModelBuilder
+from .trainer import Trainer
+from .evaluator import ModelEvaluator
+
+__all__ = ['ModelBuilder', 'Trainer', 'ModelEvaluator']
+```
+
+File ini membuat directory `models/` menjadi Python package dengan membaca class dari submodules Ke package level dan mendefinisikan public API yang akan di-export saat `from models import *`.
+
+## **5. Konfigurasi Sistem **
+
+### **`confiig.py`**
+
+```python
+class Config:
+    # Paths
+    DATA_DIR: str = "./data"
+    MODEL_DIR: str = "./models"
+
+    IMG_SIZE: tuple = (224, 224)
+    BATCH_SIZE: int = 32  # Smaller batch size for more stable training
+    EPOCHS: int = 80  # More epochs to allow better convergence
+    LEARNING_RATE: float = 0.001  # Lower learning rate for more stable training
+
+    BASE_MODEL: str = "mobilenetv2"
+
+    # Classes
+    CLASS_NAMES: list = ['medium', 'normal', 'severe']
+
+    # Increase weight for severe class since it's being misclassified
+    CLASS_WEIGHTS: dict = {0: 1.0, 1: 1.5, 2: 2.5}  # severe, medium, normal
+```
+
+File ini berfunsgi untuk menyimpan seluruh parameter sistem. `DATA_DIR` menentukan lokasi root directory dan `MODEL_DIR` menentukan lokasi penyimpanan model trained dan checkpoint. Dimesni input ditetapkan 224x224 px yang merupakan standar MobileNetV2. `BATCH_SIZE` sebesar 32 dipilih untuk stabilitas komputasi gradien efisiensi memori, serta regularisasi efek. `EPOCHS` sebesar 80 memberikan waktu  cukup untuk model konvergen. `LEARNING_RATE` sebesar 0.001 sebagai default optimal untuk Adam Optimizer. 
+
+Weight assignment digunakan untuk mengatasi dataset yang tidak imbang menggunakan strategi pengaturan weigths sebagai berikut:
+- medium = 1.0
+- normal = 1.5
+- severe = 2.5
 
 ## Demo
 
