@@ -1397,8 +1397,6 @@ Berdasarkan hasil training tersebut, model sangat cepat belajar dan mencapai aku
 
 ## **Training Demo**
 
-![Demo Sistem](../predict.gif)
-
 ```bash
 ============================================================
 Training Complete!
@@ -1461,6 +1459,10 @@ Process finished with exit code 0
 ```
 
 Sistem mengambil semua foto dari folder `bppselatanpredik/` kemudian dengan model AI yang telah dilatih sebelumnya akan membaca foto satu per satu. Model akan menebak tingkat kerusakan jalan dan mengklasifikasikannya ke tiga kelas yaitu medium, normal, atau severe. Setelah itu, sistem akan mengambil foto dengan metadata dan menandainya di peta interaktif dengan warna pin  berbeda-beda sesuai kelasnya.
+
+## **Predict Demo**
+
+![Demo Sistem](../predict.gif)
 
 ## **Map Demo**
 
