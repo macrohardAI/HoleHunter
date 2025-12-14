@@ -1,4 +1,4 @@
-# Sistem Mapping Jalan Berlubang di Kalimantan
+![WhatsApp Image 2025-12-14 at 23 24 04_1e3d6e72](https://github.com/user-attachments/assets/d04d8ddb-c414-4380-a757-3c088beac4d8)# Sistem Mapping Jalan Berlubang di Kalimantan
 
 <!-- Insert description -->
 
@@ -101,7 +101,7 @@ Output terakhir model
 
 ## **2.2 Loss Function**
 
-Dataset jalan berlubang yang kami gunakan memiliki ketidakseimbangan kelas. Kami mengatasi masalah ini dengan menggunakan weighted loss function dan memberikan bobot tertinggi untuk kelas severe (2.5) untuk meningkatkan sensitivitas model terhadap kelas severe. 
+Dataset jalan berlubang yang kami gunakan memiliki ketidakseimbangan kelas. Kami mengatasi masalah ini dengan menggunakan categorical cross-entropy dengan skema class weighting pada proses training dan memberikan bobot tertinggi untuk kelas severe (2.5) untuk meningkatkan sensitivitas model terhadap kelas severe. 
 
 ### **`model_builder.py`**
 ```python
