@@ -252,8 +252,6 @@ MobileNetV2 menggunakan parameter `alpha = 1` untuk mengurangi jumlah parameter 
 ### **1.4 Preprocessing Layer**
 
 ```python
-if self.config.BASE_MODEL == 'resnet50':
-    x = keras.applications.resnet50.preprocess_input(inputs)
 elif self.config.BASE_MODEL == 'mobilenetv2':
     x = layers.Rescaling(1./127.5, offset=-1)(inputs)
 ```
