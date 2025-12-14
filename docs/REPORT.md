@@ -31,7 +31,7 @@ Kami menggunakan transfer learning dengan MobileNetV2 sebagai base model karena 
 ### **1. Input (224×224×3)**
 
 ### **2. Rescalling Normalization**
-Input gambar dinormalisasi ke range [-1,1] sesuai dengan kebutuhan MobleNetV2.
+Input gambar di normalisasi ke range [-1,1] sesuai dengan kebutuhan MobileNetV2.
 
 ### **`model_builder.py`**
 ```python
@@ -231,7 +231,7 @@ def build_base_model(self) -> tf.keras.Model:
         )
 ```
 
-Method `build_base_model()` memuat model pre-trained dari Keras Aplications.
+Method `build_base_model()` memuat model pre-trained dari Keras Applications.
 `input_shape` menentukan dimensi input gambar seperti tinggi, lebar, dan channel RGB. `include_top` di-set `false` untuk menghilangkan fully-connected layer asli yang memungkinkan custom head.
 
 ### **1.3 Fine-Tuning**
@@ -257,7 +257,7 @@ elif self.config.BASE_MODEL == 'mobilenetv2':
     x = layers.Rescaling(1./127.5, offset=-1)(inputs)
 ```
 
-MPreprocessing disesuaikan dengan arsitektur base model. Karena menggunakan MobileNetV2, maka normalisasi ke range [-1,1] menggunakan layer `Rescaling`.
+Preprocessing disesuaikan dengan arsitektur base model. Karena menggunakan MobileNetV2, maka normalisasi ke range [-1,1] menggunakan layer `Rescaling`.
 
 ### **1.5 Feature Extraction dan Pooling**
 
@@ -266,7 +266,7 @@ x = base_model(x, training=False)
 x = layers.GlobalAveragePooling2D()(x)
 ```
 
-`training = False` memastikan batch normalization layers menggunakan statistik fixed dan `GlobalAveragePooling2d` mengkonversi feature maps menjadi vektor 1D dengan averaging spatial dimensionts untuk mengurangi parameter dan mencegah overfitting. 
+`training = False` memastikan batch normalization layers menggunakan statistik fixed dan `GlobalAveragePooling2d` mengkonversi feature maps menjadi vektor 1D dengan averaging spatial dimensions untuk mengurangi parameter dan mencegah overfitting. 
 
 ### **1.6 Classification Head**
 
@@ -300,7 +300,7 @@ def compile_model(self, model: tf.keras.Model) -> tf.keras.Model:
     )
 ```
 
-`complie_model` digunakan untuk mengonfigurasi proses pembelajharan model dengan Adam Optimizer sebagai optimisasinya dan Categorical Crossentropy sebagai Loss Function untuk klasifikasi multi-class, serta accuracy sebagai metrik evaluasi.
+`complie_model` digunakan untuk mengkonfigurasi proses pembelajaran model dengan Adam Optimizer sebagai optimalisasinya dan Categorical Crossentropy sebagai Loss Function untuk klasifikasi multi-class, serta accuracy sebagai metrik evaluasi.
 
 
 ## **2. Evaluasi Model **
@@ -318,7 +318,7 @@ class ModelEvaluator:
 
 Kelas `ModelEvaluator` menerima trained model dan config object untuk melakukan berbagai jenis evaluasi.
 
-### **2.2 Evalusasi Komprehensif**
+### **2.2 Evaluasi Komprehensif**
 
 ```python
 def evaluate(self, test_generator) -> dict:
@@ -327,7 +327,7 @@ def evaluate(self, test_generator) -> dict:
     true_labels = test_generator.labels
 ```
 
-proses evaluasi dilakukan dengan cara mengenerate prediksi untuk seluruh test set lalu mengonversi probabilitas ke class leabels dengan `argmax`. Terakhir, diekstrak true labels dari generator.
+proses evaluasi dilakukan dengan cara mengenerate prediksi untuk seluruh test set lalu mengonversi probabilitas ke class labels dengan `argmax`. Terakhir, diekstrak true labels dari generator.
 
 ### **2.3 Perhitungan Metrik**
 
@@ -350,7 +350,7 @@ print(classification_report(
 ))
 ```
 
-Report menampilkan precision, recall, F1-scrore untuk setiap class secara detail.
+Report menampilkan precision, recall, F1-score untuk setiap class secara detail.
 
 ### **2.5 Confusion Matrix**
 
@@ -370,15 +370,8 @@ def predict_single(self, image_path: str) -> dict:
             # Load and preprocess image
             img = Image.open(image_path).convert('RGB')
             img = img.resize(self.config.IMG_SIZE, Image.Resampling.LANCZOS)
-
-            # --- PERBAIKAN DI SINI ---
-            img_array = np.array(img)  # JANGAN DIBAGI 255.0
-            # -------------------------
-
+            img_array = np.array(img)  
             img_array = np.expand_dims(img_array, axis=0)
-
-            # Optional: Debugging (Bisa dihapus nanti)
-            # print(f"Debug Min: {img_array.min()}, Max: {img_array.max()}")
 
             # Make prediction
             prediction = self.model.predict(img_array, verbose=0)
@@ -459,9 +452,9 @@ def setup_callbacks(self, model_dir='./models') -> list:
         return callbacks
 ```
 
-`ModelCheckpoint` meyimpan model terbaik berdasarkan validation accuracy. Hanya model dengan  performa terbaik yang dsimpan untuk mencegah overfitting. `EarlyStopping` menghentikan training jika validation los tidak membaik setelah 15 epochs. Parameter `restore_best_weights = True` mengembalikan bobot  terbaik saat training dihentikan. `ReduceLRONPlateau` mengurangi learning rate sebesar 30% jika validation loss plateau selama 7 epochs. Strategi ini membantu model menemukan minimum yang lebih baik dengan learning rate lebih kecil. `TwnsorBoard` adalah logging untuk visualisasi training di tensorBoard.
+`ModelCheckpoint` menyimpan model terbaik berdasarkan validation accuracy. Hanya model dengan  performa terbaik yang disimpan untuk mencegah overfitting. `EarlyStopping` menghentikan training jika validation los tidak membaik setelah 15 epochs. Parameter `restore_best_weights = True` mengembalikan bobot  terbaik saat training dihentikan. `ReduceLRONPlateau` mengurangi learning rate sebesar 30% jika validation loss plateau selama 7 epochs. Strategi ini membantu model menemukan minimum yang lebih baik dengan learning rate lebih kecil. `TwnsorBoard` adalah logging untuk visualisasi training di tensorBoard.
 
-### **3.3 Main Traing Loop**
+### **3.3 Main Training Loop**
 
 ```python
 def train(
@@ -502,7 +495,7 @@ def train(
         return self.history
 ```
 
-Training dimulai dengan build model menggunakan ModelBuilder lalu model di compile dengan optimizer dan loss function. Setelah itu model summary diprint untuk  verifikasi arsitektur.
+Training dimulai dengan build model menggunakan ModelBuilder lalu model di compile dengan optimizer dan loss function. Setelah itu model summary di print untuk  verifikasi arsitektur.
 
 ### **3.4 Model Saving**
 
@@ -572,7 +565,7 @@ class Config:
     CLASS_WEIGHTS: dict = {0: 1.0, 1: 1.5, 2: 2.5}  # severe, medium, normal
 ```
 
-File ini berfunsgi untuk menyimpan seluruh parameter sistem. `DATA_DIR` menentukan lokasi root directory dan `MODEL_DIR` menentukan lokasi penyimpanan model trained dan checkpoint. Dimensi input ditetapkan 224x224 px yang merupakan standar MobileNetV2. `BATCH_SIZE` sebesar 32 dipilih untuk stabilitas komputasi gradien efisiensi memori, serta regularisasi efek. `EPOCHS` sebesar 80 memberikan waktu cukup untuk model konvergen. `LEARNING_RATE` sebesar 0.001 sebagai default optimal untuk Adam Optimizer. 
+File ini berfungsi untuk menyimpan seluruh parameter sistem. `DATA_DIR` menentukan lokasi root directory dan `MODEL_DIR` menentukan lokasi penyimpanan model trained dan checkpoint. Dimensi input ditetapkan 224x224 px yang merupakan standar MobileNetV2. `BATCH_SIZE` sebesar 32 dipilih untuk stabilitas komputasi gradien efisiensi memori, serta regularisasi efek. `EPOCHS` sebesar 80 memberikan waktu cukup untuk model konvergen. `LEARNING_RATE` sebesar 0.001 sebagai default optimal untuk Adam Optimizer. 
 
 Weight assignment digunakan untuk mengatasi dataset yang tidak imbang menggunakan strategi pengaturan weigths sebagai berikut:
 - medium = 1.0
@@ -585,7 +578,7 @@ Weight assignment digunakan untuk mengatasi dataset yang tidak imbang menggunaka
 
 ## Summary
 
-<!-- Insert summary -->
+Sistem Mapping Jalan Berlubang di Kalimantan menggunakan metode CNN dapat disimpulkan bahwa sistem ini mampu mengklasifikasikan tingkat keparahan jalan berlubang menjadi tiga kelas yaitu medium, normal, dan severe. tbc tbc tbc..... Secara Keseluruhan, sistem yang dikembangkan menunjukkan bahwa metode CNN dengan model MobileNetV2 efektif untuk mengklasifikasikan jenis jalan berlubang di Kalimantan dan dapat diekmbangkan lebih lanjut sebagai pendukung pemeliharaan infrastruktur jalanan.
 
 ## References
 
