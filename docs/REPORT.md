@@ -30,7 +30,7 @@ Kami menggunakan transfer learning dengan MobileNetV2 sebagai base model karena 
 
 ### **1. Input (224×224×3)**
 
-### **2. Rescalling Normalization**
+### **2. Rescaling Normalization**
 Input gambar dinormalisasi ke dalam rentang nilai [-1, 1], sesuai dengan kebutuhan arsitektur MobileNetV2.
 
 ### **`model_builder.py`**
@@ -452,7 +452,7 @@ def setup_callbacks(self, model_dir='./models') -> list:
         return callbacks
 ```
 
-`ModelCheckpoint` menyimpan model terbaik berdasarkan validation accuracy. Hanya model dengan performa terbaik yang disimpan untuk mencegah overfitting. `EarlyStopping` menghentikan training jika validation loss tidak membaik setelah 15 epochs. Parameter `restore_best_weights = True` mengembalikan bobot  terbaik saat training dihentikan. `ReduceLRONPlateau` mengurangi learning rate sebesar 30% jika validation loss mengalami plateau selama 7 epochs. Strategi ini membantu model menemukan minimum yang lebih baik dengan learning rate lebih kecil. `TensorBoard` adalah logging untuk visualisasi training di tensorBoard.
+`ModelCheckpoint` menyimpan model terbaik berdasarkan validation accuracy. Hanya model dengan performa terbaik yang disimpan untuk mencegah overfitting. `EarlyStopping` menghentikan training jika validation loss tidak membaik setelah 15 epochs. Parameter `restore_best_weights = True` mengembalikan bobot  terbaik saat training dihentikan. `ReduceLRONPlateau` mengurangi learning rate sebesar 30% jika validation loss mengalami plateau selama 7 epochs. Strategi ini membantu model menemukan minimum yang lebih baik dengan learning rate lebih kecil. `TensorBoard` adalah logging untuk visualisasi training di TensorBoard.
 
 ### **3.3 Main Training Loop**
 
@@ -539,7 +539,7 @@ from .evaluator import ModelEvaluator
 __all__ = ['ModelBuilder', 'Trainer', 'ModelEvaluator']
 ```
 
-File ini membuat directory `models/` menjadi Python package dengan membaca class dari submodules Ke package level dan mendefinisikan public API yang akan di-export saat `from models import *`.
+File ini membuat directory `models/` menjadi Python package dengan membaca class dari submodules ke package level dan mendefinisikan public API yang akan di-export saat `from models import *`.
 
 ## **5. Konfigurasi Sistem**
 
@@ -626,7 +626,7 @@ lon_ref = gps_info.get(3)   # 'E' atau 'W'
 lon_dms = gps_info.get(4)   # (degrees, minutes, seconds)
 ```
 
-### **f. Konfersi ke desimal**
+### **f. Konversi ke desimal**
 
 ```python
 lat = GPSHelper.get_decimal_from_dms(lat_dms, lat_ref)
@@ -1134,7 +1134,7 @@ def rotate(image, angle_range=30):
         return enhancer.enhance(factor)
 ```
 
-### **k. Menggser hue warna gambar**
+### **k. Menggeser hue warna gambar**
 
 ```python
 @staticmethod
