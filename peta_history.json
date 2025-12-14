@@ -1,0 +1,298 @@
+[
+    {
+        "lat": -1.2414906997222224,
+        "lon": 116.8840394,
+        "class": "medium",
+        "conf": 0.9874611496925354,
+        "img_name": "20251201_140619.jpg",
+        "full_path": "bppselatanpredik/20251201_140619.jpg"
+    },
+    {
+        "lat": -1.2362394997222224,
+        "lon": 116.87444789999999,
+        "class": "medium",
+        "conf": 0.8936833739280701,
+        "img_name": "20251201_142802.jpg",
+        "full_path": "bppselatanpredik/20251201_142802.jpg"
+    },
+    {
+        "lat": -1.2361576997222223,
+        "lon": 116.87453669972221,
+        "class": "medium",
+        "conf": 0.9916926622390747,
+        "img_name": "20251201_142858.jpg",
+        "full_path": "bppselatanpredik/20251201_142858.jpg"
+    },
+    {
+        "lat": -1.2360812,
+        "lon": 116.87447299972222,
+        "class": "severe",
+        "conf": 0.9976218342781067,
+        "img_name": "20251201_142930.jpg",
+        "full_path": "bppselatanpredik/20251201_142930.jpg"
+    },
+    {
+        "lat": -1.2360812,
+        "lon": 116.87447299972222,
+        "class": "severe",
+        "conf": 0.8605659008026123,
+        "img_name": "20251201_143008.jpg",
+        "full_path": "bppselatanpredik/20251201_143008.jpg"
+    },
+    {
+        "lat": -1.2420748997222222,
+        "lon": 116.88279939972222,
+        "class": "medium",
+        "conf": 0.7587650418281555,
+        "img_name": "20251201_143350.jpg",
+        "full_path": "bppselatanpredik/20251201_143350.jpg"
+    },
+    {
+        "lat": -1.2420748997222222,
+        "lon": 116.88279939972222,
+        "class": "severe",
+        "conf": 0.9984702467918396,
+        "img_name": "20251201_143358.jpg",
+        "full_path": "bppselatanpredik/20251201_143358.jpg"
+    },
+    {
+        "lat": -1.2421257997222224,
+        "lon": 116.8836222,
+        "class": "severe",
+        "conf": 0.6232728958129883,
+        "img_name": "20251201_143503.jpg",
+        "full_path": "bppselatanpredik/20251201_143503.jpg"
+    },
+    {
+        "lat": -1.2422572997222223,
+        "lon": 116.88715329972223,
+        "class": "medium",
+        "conf": 0.7670324444770813,
+        "img_name": "20251201_143618.jpg",
+        "full_path": "bppselatanpredik/20251201_143618.jpg"
+    },
+    {
+        "lat": -1.2526950997222221,
+        "lon": 116.89922479972223,
+        "class": "severe",
+        "conf": 0.9859616160392761,
+        "img_name": "20251201_144231.jpg",
+        "full_path": "bppselatanpredik/20251201_144231.jpg"
+    },
+    {
+        "lat": -1.2624017,
+        "lon": 116.89294239972223,
+        "class": "medium",
+        "conf": 0.5569548606872559,
+        "img_name": "20251201_144733.jpg",
+        "full_path": "bppselatanpredik/20251201_144733.jpg"
+    },
+    {
+        "lat": -1.2616544,
+        "lon": 116.88877379972223,
+        "class": "normal",
+        "conf": 0.9966769218444824,
+        "img_name": "20251201_144826.jpg",
+        "full_path": "bppselatanpredik/20251201_144826.jpg"
+    },
+    {
+        "lat": -1.2660955,
+        "lon": 116.8840588,
+        "class": "medium",
+        "conf": 0.8089660406112671,
+        "img_name": "20251201_144950.jpg",
+        "full_path": "bppselatanpredik/20251201_144950.jpg"
+    },
+    {
+        "lat": -1.2721685999999999,
+        "lon": 116.87564369972222,
+        "class": "medium",
+        "conf": 0.977250874042511,
+        "img_name": "20251201_145236.jpg",
+        "full_path": "bppselatanpredik/20251201_145236.jpg"
+    },
+    {
+        "lat": -1.2727258997222222,
+        "lon": 116.87573369972222,
+        "class": "medium",
+        "conf": 0.9980772733688354,
+        "img_name": "20251201_145247.jpg",
+        "full_path": "bppselatanpredik/20251201_145247.jpg"
+    },
+    {
+        "lat": -1.2699461997222221,
+        "lon": 116.85552559999999,
+        "class": "severe",
+        "conf": 0.9995914697647095,
+        "img_name": "20251201_145931.jpg",
+        "full_path": "bppselatanpredik/20251201_145931.jpg"
+    },
+    {
+        "lat": -1.2707531997222221,
+        "lon": 116.85988159972221,
+        "class": "severe",
+        "conf": 0.710483968257904,
+        "img_name": "20251201_150114.jpg",
+        "full_path": "bppselatanpredik/20251201_150114.jpg"
+    },
+    {
+        "lat": -1.2693071,
+        "lon": 116.85638269972222,
+        "class": "severe",
+        "conf": 0.9276227951049805,
+        "img_name": "20251201_150552.jpg",
+        "full_path": "bppselatanpredik/20251201_150552.jpg"
+    },
+    {
+        "lat": -1.2755206997222222,
+        "lon": 116.84573479999999,
+        "class": "severe",
+        "conf": 0.9984375834465027,
+        "img_name": "20251201_150815.jpg",
+        "full_path": "bppselatanpredik/20251201_150815.jpg"
+    },
+    {
+        "lat": -1.2767779997222222,
+        "lon": 116.8405714,
+        "class": "normal",
+        "conf": 0.8481418490409851,
+        "img_name": "20251201_150933.jpg",
+        "full_path": "bppselatanpredik/20251201_150933.jpg"
+    },
+    {
+        "lat": -1.276970699722222,
+        "lon": 116.8395711,
+        "class": "medium",
+        "conf": 0.9976661205291748,
+        "img_name": "20251201_150944.jpg",
+        "full_path": "bppselatanpredik/20251201_150944.jpg"
+    },
+    {
+        "lat": -1.2770965997222221,
+        "lon": 116.8354815,
+        "class": "severe",
+        "conf": 0.7767134308815002,
+        "img_name": "20251201_151115.jpg",
+        "full_path": "bppselatanpredik/20251201_151115.jpg"
+    },
+    {
+        "lat": -1.2770965997222221,
+        "lon": 116.8354815,
+        "class": "medium",
+        "conf": 0.5145149827003479,
+        "img_name": "20251201_151129.jpg",
+        "full_path": "bppselatanpredik/20251201_151129.jpg"
+    },
+    {
+        "lat": -1.2769245999999999,
+        "lon": 116.83741909999999,
+        "class": "severe",
+        "conf": 0.9937775731086731,
+        "img_name": "20251201_151155.jpg",
+        "full_path": "bppselatanpredik/20251201_151155.jpg"
+    },
+    {
+        "lat": -1.2747399997222222,
+        "lon": 116.84877,
+        "class": "severe",
+        "conf": 0.9892945289611816,
+        "img_name": "20251201_151528.jpg",
+        "full_path": "bppselatanpredik/20251201_151528.jpg"
+    },
+    {
+        "lat": -1.2739561997222222,
+        "lon": 116.85021779972222,
+        "class": "medium",
+        "conf": 0.7184833884239197,
+        "img_name": "20251201_151557.jpg",
+        "full_path": "bppselatanpredik/20251201_151557.jpg"
+    },
+    {
+        "lat": -1.2738013997222222,
+        "lon": 116.85042409972222,
+        "class": "medium",
+        "conf": 0.8457833528518677,
+        "img_name": "20251201_151559.jpg",
+        "full_path": "bppselatanpredik/20251201_151559.jpg"
+    },
+    {
+        "lat": -1.2725530999999999,
+        "lon": 116.85190109999999,
+        "class": "severe",
+        "conf": 0.6009595990180969,
+        "img_name": "20251201_151640.jpg",
+        "full_path": "bppselatanpredik/20251201_151640.jpg"
+    },
+    {
+        "lat": -1.2721886,
+        "lon": 116.85229609999999,
+        "class": "normal",
+        "conf": 0.6302381157875061,
+        "img_name": "20251201_151649.jpg",
+        "full_path": "bppselatanpredik/20251201_151649.jpg"
+    },
+    {
+        "lat": -1.2696043997222222,
+        "lon": 116.85594119999999,
+        "class": "medium",
+        "conf": 0.4246397316455841,
+        "img_name": "20251201_151812.jpg",
+        "full_path": "bppselatanpredik/20251201_151812.jpg"
+    },
+    {
+        "lat": -1.2404523997222223,
+        "lon": 116.87311139972222,
+        "class": "normal",
+        "conf": 0.9647586345672607,
+        "img_name": "20251201_152629.jpg",
+        "full_path": "bppselatanpredik/20251201_152629.jpg"
+    },
+    {
+        "lat": -1.2404523997222223,
+        "lon": 116.87311139972222,
+        "class": "severe",
+        "conf": 0.8761031627655029,
+        "img_name": "20251201_152632.jpg",
+        "full_path": "bppselatanpredik/20251201_152632.jpg"
+    },
+    {
+        "lat": -1.2395315,
+        "lon": 116.87203839972221,
+        "class": "severe",
+        "conf": 0.594607412815094,
+        "img_name": "20251201_152703.jpg",
+        "full_path": "bppselatanpredik/20251201_152703.jpg"
+    },
+    {
+        "lat": -1.239244,
+        "lon": 116.87107589972221,
+        "class": "severe",
+        "conf": 0.7993121147155762,
+        "img_name": "20251201_152713.jpg",
+        "full_path": "bppselatanpredik/20251201_152713.jpg"
+    },
+    {
+        "lat": -1.2392661,
+        "lon": 116.87077479999999,
+        "class": "severe",
+        "conf": 0.8849576115608215,
+        "img_name": "20251201_152917.jpg",
+        "full_path": "bppselatanpredik/20251201_152917.jpg"
+    },
+    {
+        "lat": -1.2392334,
+        "lon": 116.87115259999999,
+        "class": "medium",
+        "conf": 0.6788231134414673,
+        "img_name": "20251201_152922.jpg",
+        "full_path": "bppselatanpredik/20251201_152922.jpg"
+    },
+    {
+        "lat": -1.2398076,
+        "lon": 116.87316439972221,
+        "class": "severe",
+        "conf": 0.8259273171424866,
+        "img_name": "20251201_153044.jpg",
+        "full_path": "bppselatanpredik/20251201_153044.jpg"
+    }
+]

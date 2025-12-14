@@ -80,7 +80,6 @@ class ModelEvaluator:
 
             img_array = np.expand_dims(img_array, axis=0)
 
-            # Optional: Debugging (Bisa dihapus nanti)
             # print(f"Debug Min: {img_array.min()}, Max: {img_array.max()}")
 
             # Make prediction

@@ -19,4 +19,4 @@ class Config:
     CLASS_NAMES: list = ['medium', 'normal', 'severe']
 
     # Increase weight for severe class since it's being misclassified
-    CLASS_WEIGHTS: dict = {0: 1.0, 1: 1.5, 2: 2.5}  # severe, medium, normal
+    CLASS_WEIGHTS: dict = {0: 1.0, 1: 1.5, 2: 2.5}  # medium, normal, severe

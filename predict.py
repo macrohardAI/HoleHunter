@@ -45,6 +45,7 @@ def predict_image(model_path: str, image_path: str, config: Config = None):
     result = evaluator.predict_single(image_path)
 
     if result:
+        result['image_path'] = str(image_path)
         print("\n" + "=" * 50)
         print("PREDICTION RESULT")
         print("=" * 50)
@@ -57,6 +58,10 @@ def predict_image(model_path: str, image_path: str, config: Config = None):
             bar_length = int(prob * 30)  # Visual bar representation
             bar = "█" * bar_length + "░" * (30 - bar_length)
             print(f"  {class_name:20s}: [{bar}] {prob:.4f} ({prob*100:.2f}%)")
+        print("=" * 50)
+
+        print("\n🗺️  Updating Map...")
+        MapGenerator.generate_map([result], 'laporan_peta_kerusakan.html')
         print("=" * 50)
 
         # Display image
@@ -148,11 +153,11 @@ if __name__ == '__main__':
                         help='Path to trained model (.keras format)')
     parser.add_argument('--image', help='Path to single image for prediction')
     parser.add_argument('--batch', help='Directory of images for batch prediction')
-    
+
     args = parser.parse_args()
-    
+
     config = Config()
-    
+
     if args.image:
         predict_image(args.model, args.image, config)
     elif args.batch:

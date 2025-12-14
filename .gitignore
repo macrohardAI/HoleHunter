@@ -216,3 +216,10 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+bppselatanpredik/
+data/
+prediksisevere/
+prediksimedium/
+prediknew/
+test.py
