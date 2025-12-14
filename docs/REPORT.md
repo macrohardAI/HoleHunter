@@ -837,7 +837,7 @@ title = f"Pred: {pred_class}\nConfidence: {confidence:.2%}"
 
 Berdasarkan hasil training, model sudah sangat baik dan siap untuk digunakan. Dapat dilihat bahwa pada class medium, model berhasil memprediksi 10 foto berlabel "medium', 0 salah di "normal", dan 2 salah di "severe". Kemudian, pada class normal model berhasil memprediksi 11 foto berlabel "normal', 0 salah di "medium", dan 0 salah di "severe". Terakhir, pada class severe model berhasil memprediksi 10 foto berlabel "severe', 0 salah di "medium", dan 0 salah di "normal".
 
-![Demo Sistem](../training_result2.jpg)
+![Demo Sistem](../training_resul2.jpg)
 
 Berdasarkan hasil training tersebut, model sangat cepat belajar dan mencapai akurasi hampir sempurna dengan Epoch 0-5 yang naik dengan cepat dari 78%  menuju 97%, serta Epoch 5-23 yang stabil. Selain itu, model juga semakin yakin dan semakin sedikit melakukan kesalah di data training.
 
@@ -1083,7 +1083,7 @@ Sistem mengambil semua foto dari folder `bppselatanpredik/` kemudian dengan mode
 
 ## **Map Demo**
 
-![Demo Sistem](../map_demo(1).gif)
+![Demo Sistem](../map_demo4.gif)
 
 ## Summary
 
