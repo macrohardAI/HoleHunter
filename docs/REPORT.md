@@ -241,12 +241,12 @@ base_model = keras.applications.MobileNetV2(
     input_shape=(*self.config.IMG_SIZE, 3),
     include_top=False,
     weights='imagenet',
-    alpha=0.35
+    alpha= 1
 )
 base_model.trainable = False
 ```
 
-MobileNetV2 menggunakan parameter `alpha = 0.35` untuk mengurangi jumlah parameter dan menghasilkan model yang lebih ringan dan cepat.
+MobileNetV2 menggunakan parameter `alpha = 1` untuk mengurangi jumlah parameter dan menghasilkan model yang lebih ringan dan cepat.
 
 ### **1.4 Preprocessing Layer**
 
@@ -562,7 +562,7 @@ class Config:
     CLASS_NAMES: list = ['medium', 'normal', 'severe']
 
     # Increase weight for severe class since it's being misclassified
-    CLASS_WEIGHTS: dict = {0: 1.0, 1: 1.5, 2: 2.5}  # severe, medium, normal
+    CLASS_WEIGHTS: dict = {0: 1.0, 1: 1.5, 2: 2.5}  # medium, normal, severe
 ```
 
 File ini berfungsi untuk menyimpan seluruh parameter sistem. `DATA_DIR` menentukan lokasi root directory dan `MODEL_DIR` menentukan lokasi penyimpanan model trained dan checkpoint. Dimensi input ditetapkan 224x224 px yang merupakan standar MobileNetV2. `BATCH_SIZE` sebesar 32 dipilih untuk stabilitas komputasi, gradien efisiensi memori, serta regularisasi efek. `EPOCHS` sebesar 80 memberikan waktu cukup untuk model konvergen. `LEARNING_RATE` sebesar 0.001 sebagai default optimal untuk Adam Optimizer. 
