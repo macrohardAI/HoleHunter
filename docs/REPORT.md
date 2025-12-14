@@ -265,7 +265,7 @@ x = base_model(x, training=False)
 x = layers.GlobalAveragePooling2D()(x)
 ```
 
-`training = False` memastikan batch normalization layers menggunakan statistik tetap dan `GlobalAveragePooling2D` mengkonversi feature maps menjadi vektor 1D dengan averaging spatial dimensions untuk mengurangi parameter dan mencegah overfitting. 
+`training = False` memastikan batch normalization layers menggunakan statistik tetap dan `GlobalAveragePooling2D` mengonversi feature maps menjadi vektor 1D dengan averaging spatial dimensions untuk mengurangi parameter dan mencegah overfitting. 
 
 ### **1.6 Classification Head**
 
