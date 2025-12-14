@@ -1372,7 +1372,9 @@ if __name__ == "__main__":
 
 ![Demo Sistem](../training_result.jpg)
 
-Berdasarkan hasil training, model sudah sangat baik dan siap untuk digunakan. Dapat dilihat bahwa pada class medium, model berhasil memprediksi 10 foto berlabel "medium", 0 salah di "normal", dan 2 salah di "severe". Kemudian, pada class normal model berhasil memprediksi 11 foto berlabel "normal", 0 salah di "medium", dan 0 salah di "severe". Terakhir, pada class severe model berhasil memprediksi 10 foto berlabel "severe", 0 salah di "medium", dan 0 salah di "normal".
+Evaluasi model dilakukan menggunakan dataset yang terdiri dari 70 gambar untuk masing-masing kelas (Medium, Normal, dan Severe). Dataset tersebut dibagi dengan skema pembagian 70% untuk training, 15% untuk testing, dan 15% untuk validasi. Tujuannya adalah memperkaya variasi data pembelajaran, data training juga telah melalui proses augmentasi sebesar 10 kali lipat.
+
+Berdasarkan hasil pengujian pada data test, model menunjukkan performa yang sangat baik dan siap untuk digunakan. Pada kelas Medium, model berhasil memprediksi 10 foto berlabel "medium" dengan tepat, di mana terdapat 0 kesalahan prediksi ke "normal" dan 2 kesalahan prediksi ke "severe". Pada kelas Normal, model mencapai akurasi sempurna dengan memprediksi 11 foto berlabel "normal", tanpa ada kesalahan ke kelas "medium" maupun "severe". Terakhir, pada kelas Severe, model berhasil memprediksi 10 foto berlabel "severe", dengan 0 kesalahan ke "medium" dan 0 kesalahan ke "normal".
 
 ![Demo Sistem](../training_resul2.jpg)
 
