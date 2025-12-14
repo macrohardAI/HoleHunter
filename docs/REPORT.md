@@ -101,7 +101,7 @@ Output terakhir model
 
 ## **2.2 Loss Function**
 
-Dataset jalan berlubang yang kami gunakan memiliki ketidakseimbangan kelas. Kami mengatasi masalah ini dengan menggunakan categorical cross-entropy dengan skema class weighting pada proses training dan memberikan bobot tertinggi untuk kelas severe (2.5) untuk meningkatkan sensitivitas model terhadap kelas severe. 
+Dataset jalan berlubang yang kami gunakan memiliki ketidakseimbangan kelas. Kami mengatasi masalah ini dengan menggunakan categorical cross-entropy dengan skema class weighting pada proses training dan memberikan bobot tertinggi pada kelas severe (2.5) untuk meningkatkan sensitivitas model terhadap kelas severe. 
 
 ### **`model_builder.py`**
 ```python
