@@ -1083,23 +1083,6 @@ def rotate(image, angle_range=30):
 
         return new_image
 ```
-### **g. Menggeser posisi gambar secara acak**
-
-```python
- @staticmethod
-    def shift(image, shift_range=0.15):
-        """Random shift (translation)"""
-        width, height = image.size
-
-        shift_x = int(width * random.uniform(-shift_range, shift_range))
-        shift_y = int(height * random.uniform(-shift_range, shift_range))
-
-        # Create new image with white background
-        new_image = Image.new('RGB', (width, height), 'white')
-        new_image.paste(image, (shift_x, shift_y))
-
-        return new_image
-```
 
 ### **h. Mengubah kecerahan gambar secara acak**
 
