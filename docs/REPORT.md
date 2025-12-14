@@ -205,7 +205,7 @@ di mana:
 
 ## Implementation
 
-## **1. Struktur Arsitektur Model **
+## **1. Struktur Arsitektur Model**
 
 ### **`model_builder.py`**
 
@@ -303,7 +303,7 @@ def compile_model(self, model: tf.keras.Model) -> tf.keras.Model:
 `complie_model` digunakan untuk mengkonfigurasi proses pembelajaran model dengan Adam Optimizer sebagai optimalisasinya dan Categorical Crossentropy sebagai Loss Function untuk klasifikasi multi-class, serta accuracy sebagai metrik evaluasi.
 
 
-## **2. Evaluasi Model **
+## **2. Evaluasi Model**
 
 ### **`evaluator.py`**
 
@@ -393,7 +393,7 @@ def predict_single(self, image_path: str) -> dict:
 
 `predict_single` digunakan untuk melakukan inferensi pada satu citra jalan dengan cara memuat dan memproses gambar agar sesuai dengan format input MobileNetV2, melakukan prediksi menggunakan model CNN yang telah dilatih, lalu mengembalikan hasil klasifikasi berupa class kerusakan jalan, confidence score, dan probabilitas 
 
-## **3. Training **
+## **3. Training**
 
 ### **`trainer.py`**
 
