@@ -576,7 +576,7 @@ Weight assignment digunakan untuk mengatasi dataset yang tidak imbang menggunaka
 
 ## **Training Result**
 
-![Demo Sistem](../assets/demo.gif)
+![Demo Sistem](../training_result.jpg)
 
 Berdasarkan hasil training, model sudah sangat baik dan siap untuk digunakan. Dapat dilihat bahwa pada class medium, model berhasil memprediksi 10 foto berlabel "medium', 0 salah di "normal", dan 2 salah di "severe". Kemudian, pada class normal model berhasil memprediksi 11 foto berlabel "normal', 0 salah di "medium", dan 0 salah di "severe". Terakhir, pada class severe model berhasil memprediksi 10 foto berlabel "severe', 0 salah di "medium", dan 0 salah di "normal".
 
@@ -590,7 +590,7 @@ Sistem mengambil semua foto dari folder `bppselatanpredik/` kemudian dengan mode
 
 ## **Map Demo**
 
-![Demo Sistem](../assets/demo.gif)
+![Demo Sistem](../map_demo.gif)
 
 ## Summary
 
