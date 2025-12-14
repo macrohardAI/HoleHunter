@@ -19,6 +19,55 @@ Jalan berlubang dapat mengganggu kenyamanan pengendara di lalu lintas. Selain it
 ## Methods
 
 <!-- Insert methods -->
+Metode yang digunakan untuk membangun sitem ini adalah Convulutional Neural Network yang merupakan salah satu arsitektur dari Deep Learning. CNN yang digunakan menggunakan <nama model> dan akan dilatih untuk mendeteksi dan mengklasifikasikan jalan berlubang menjadi tiga kelas yaitu Severe, Medium, dan Normal.
+
+### Convulutional Operations 
+```bash
+Output(i,j) = Σ Σ Input(i+m, j+n) × Kernel(m,n) + bias
+```
+
+### Residual Block 
+```bash
+F(x) = H(x) - x
+H(x) = F(x) + x
+```
+
+### Activation Function
+```bash
+ReLU(x) = max(0, x)
+```
+
+### Output Layer
+```bash
+Softmax(zi) = e^zi / Σ e^zj
+```
+
+### Loss Function 
+```bash
+Loss = -1/N Σ [yi × log(ŷi) + (1-yi) × log(1-ŷi)]
+```
+
+### Optimizer
+```bash
+mt = β1×mt-1 + (1-β1)×gt        ← momentum
+vt = β2×vt-1 + (1-β2)×gt²       ← variance
+θt = θt-1 - α × mt/√(vt + ε)    ← weight update
+```
+α = learning rate (0.001)
+
+### Evaluation Metrics
+```bash
+Accuracy = (TP + TN) / (TP + TN + FP + FN)
+Precision = TP / (TP + FP)
+Recall = TP / (TP + FN)
+F1-Score = 2 × (Precision × Recall) / (Precision + Recall)
+```
+
+### Normalization
+```bash
+x_normalized = (x - μ) / σ
+```
+
 
 ## Implementation
 
