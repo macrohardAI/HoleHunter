@@ -94,6 +94,6 @@ class DatabaseManager:
         finally:
             conn.close()
 
-    def get_detections_by_location(self, location: dict, radius: float) -> list:
-        """Retrieve detections near location"""
-        raise NotImplementedError
+    def __del__(self):
+        """Ensure connection is closed"""
+        self.close()
