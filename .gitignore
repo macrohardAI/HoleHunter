@@ -60,6 +60,7 @@ cover/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+database/hole.db
 
 # Flask stuff:
 instance/
@@ -215,10 +216,3 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
-
-data/
-
-prediksimedium/
-prediksisevere/
-laporan_peta_kerusakan.html
-peta_history.json
