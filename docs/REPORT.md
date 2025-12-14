@@ -16,7 +16,7 @@
 
 Jalan berlubang dapat mengganggu kenyamanan pengendara di lalu lintas. Selain itu, jalan berlubang juga berpotensi membahayakan pengendara terutama para pengemudi motor di Kalimantan yang banyak melalui jalur darat untuk bepergian antar kota yang pastinya memerlukan jalan yang layak untuk dilewati. Karena adanya masalah tersebut, mendorong penulis untuk menciptakan suatu sistem yang mampu mengklasifikasikan jalan berlubang melalui foto yang memiliki metadata dengan menerapkan metode Convolutional Neural Network (CNN). 
 
-**Keywords:** Deep Learning, Transfer Learning, MobileNetV2, Road Plothole Detection, Image Classification
+**Keywords:** Deep Learning, Transfer Learning, MobileNetV2, Road Pothole Detection, Image Classification
 
 ## Methods
 
@@ -543,7 +543,7 @@ File ini membuat directory `models/` menjadi Python package dengan membaca class
 
 ## **5. Konfigurasi Sistem**
 
-### **`confiig.py`**
+### **`config.py`**
 
 ```python
 class Config:
