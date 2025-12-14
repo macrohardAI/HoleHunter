@@ -1396,6 +1396,9 @@ Berdasarkan hasil training, model sudah sangat baik dan siap untuk digunakan. Da
 Berdasarkan hasil training tersebut, model sangat cepat belajar dan mencapai akurasi hampir sempurna dengan Epoch 0-5 yang naik dengan cepat dari 78%  menuju 97%, serta Epoch 5-23 yang stabil. Selain itu, model juga semakin yakin dan semakin sedikit melakukan kesalahan di data training.
 
 ## **Training Demo**
+
+![Demo Sistem](../predict.gif)
+
 ```bash
 ============================================================
 Training Complete!
