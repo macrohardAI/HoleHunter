@@ -222,13 +222,14 @@ Kelas ModelBuilder berfungsi sebagai factory untuk membangun model Deep Learning
 ### **1.2 Pemilihan dan Konfigurasi Base Model**
 
 ```python
-def build_base_model(self) -> tf.keras.Model:
-    if self.config.BASE_MODEL == 'resnet50':
-        base_model = keras.applications.ResNet50(
-            input_shape=(*self.config.IMG_SIZE, 3),
-            include_top=False,
-            weights='imagenet'
-        )
+elif self.config.BASE_MODEL == 'mobilenetv2':
+            # Alpha 1
+            base_model = keras.applications.MobileNetV2(
+                input_shape=(*self.config.IMG_SIZE, 3),
+                include_top=False,
+                weights='imagenet',
+                alpha=1 # Alpha=1
+            )
 ```
 
 Method `build_base_model()` memuat model yang telah dilatih sebelumnya dari Keras Applications.
