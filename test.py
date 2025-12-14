@@ -1,43 +1,55 @@
-from keras.models import load_model  # TensorFlow is required for Keras to work
-from PIL import Image, ImageOps  # Install pillow instead of PIL
-import numpy as np
+import sys
+import os
+from pathlib import Path
 
-# Disable scientific notation for clarity
-np.set_printoptions(suppress=True)
+print("=" * 40)
+print("🔍 DIAGNOSA STRUKTUR FOLDER")
+print("=" * 40)
 
-# Load the model
-model = load_model("keras_Model.h5", compile=False)
+# 1. Cek Lokasi Script
+root_dir = Path(__file__).parent
+print(f"📁 Root Folder: {root_dir}")
 
-# Load the labels
-class_names = open("labels.txt", "r").readlines()
+# 2. Cek Folder SRC
+src_path = root_dir / 'src'
+print(f"📁 Target SRC : {src_path}")
 
-# Create the array of the right shape to feed into the keras model
-# The 'length' or number of images you can put into the array is
-# determined by the first position in the shape tuple, in this case 1
-data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
+if not src_path.exists():
+    print("❌ ERROR: Folder 'src' tidak ditemukan!")
+    sys.exit()
+else:
+    print("✅ Folder 'src' ditemukan.")
 
-# Replace this with the path to your image
-image = Image.open("/src/data/raw/hole/img-1.jpg").convert("RGB")
+# 3. Cek Folder Utils
+utils_path = src_path / 'utils'
+if not utils_path.exists():
+    print("❌ ERROR: Folder 'src/utils' tidak ditemukan!")
+    # Cek apakah ada file utils.py yang nakal
+    if (src_path / 'utils.py').exists():
+        print("⚠️ PERINGATAN: Ditemukan file 'src/utils.py'. Ini bisa bikin konflik! Hapus/Rename file ini.")
+else:
+    print("✅ Folder 'src/utils' ditemukan.")
 
-# resizing the image to be at least 224x224 and then cropping from the center
-size = (224, 224)
-image = ImageOps.fit(image, size, Image.Resampling.LANCZOS)
+    # 4. Absen File di dalam Utils
+    print("\n📄 Isi folder 'src/utils':")
+    files = [f.name for f in utils_path.iterdir() if f.is_file()]
+    for f in files:
+        print(f"   - {f}")
 
-# turn the image into a numpy array
-image_array = np.asarray(image)
+    if 'visualizer.py' in files:
+        print("\n✅ File 'visualizer.py' ADA.")
+    else:
+        print("\n❌ Gawat! File 'visualizer.py' HILANG.")
 
-# Normalize the image
-normalized_image_array = (image_array.astype(np.float32) / 127.5) - 1
+print("=" * 40)
 
-# Load the image into the array
-data[0] = normalized_image_array
+# 5. Simulasi Import
+print("🧪 Test Import...")
+sys.path.insert(0, str(src_path))
 
-# Predicts the model
-prediction = model.predict(data)
-index = np.argmax(prediction)
-class_name = class_names[index]
-confidence_score = prediction[0][index]
+try:
+    from utils import visualizer
 
-# Print prediction and confidence score
-print("Class:", class_name[2:], end="")
-print("Confidence Score:", confidence_score)
+    print("✅ SUCCESS: Import utils.visualizer berhasil!")
+except ImportError as e:
+    print(f"❌ FAILED: Masih error -> {e}")

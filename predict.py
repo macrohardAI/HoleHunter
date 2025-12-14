@@ -12,7 +12,8 @@ sys.path.insert(0, str(Path(__file__).parent / 'src'))
 
 from config import Config
 from models.evaluator import ModelEvaluator
-from utils.visualizer import Visualizer
+from helpers.visualizer import Visualizer
+from helpers.map_generator import MapGenerator
 
 
 def predict_image(model_path: str, image_path: str, config: Config = None):
@@ -111,7 +112,11 @@ def predict_batch(model_path: str, image_dir: str, config: Config = None):
         try:
             result = evaluator.predict_single(str(img_path))
             if result:
+                # 1. SISIPKAN INI: Simpan path gambar ke result
+                result['image_path'] = str(img_path)  # <--- TAMBAHAN PENTING
+
                 results.append(result)
+
                 img = Image.open(img_path)
                 if img.mode != 'RGB':
                     img = img.convert('RGB')
@@ -121,8 +126,14 @@ def predict_batch(model_path: str, image_dir: str, config: Config = None):
             print(f"  ⚠️  {img_path.name}: Error - {str(e)}")
             continue
 
-    # Display all predictions
+        # --- BAGIAN DISPLAY JUGA DITAMBAH ---
     if results:
+        # 2. SISIPKAN INI: Panggil Map Generator
+        print("\n" + "=" * 50)
+        MapGenerator.generate_map(results, 'laporan_peta_kerusakan.html')  # <--- TAMBAHAN PENTING
+        print("=" * 50)
+
+        # Visualizer lama tetap jalan
         viz = Visualizer()
         viz.show_predictions(images_array, results)
 

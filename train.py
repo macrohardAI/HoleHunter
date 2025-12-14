@@ -12,7 +12,7 @@ from config import Config
 from data.preprocessor import DataPreprocessor
 from models.trainer import Trainer
 from models.evaluator import ModelEvaluator
-from utils.visualizer import Visualizer
+from helpers.visualizer import Visualizer
 
 
 def main():
