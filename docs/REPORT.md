@@ -20,7 +20,7 @@ Jalan berlubang dapat mengganggu kenyamanan pengendara di lalu lintas. Selain it
 
 ## Methods
 
-Klasifikasi jalan berlubang menggunakan teknik klasifikasi gambar dengan lebih dari satu kelas menggunakan gambar input berukuran 224 px x 224 px RGB. Sistem  ini menggunakan transfer Learning dengan MobileNetV2 sebagai base model. HoleHunter bertujuan untuk memprediksi tingkat keparahan kerusakan jalan dan  mengklasifikasikannya ke dalam salah satu dari tiga kelas yaitu:
+Klasifikasi jalan berlubang menggunakan teknik klasifikasi gambar dengan lebih dari satu kelas menggunakan gambar input berukuran 224 px x 224 px RGB. Sistem  ini menggunakan Transfer Learning dengan MobileNetV2 sebagai base model. HoleHunter bertujuan untuk memprediksi tingkat keparahan kerusakan jalan dan  mengklasifikasikannya ke dalam salah satu dari tiga kelas yaitu:
 - Medium (Rusak ringan)
 - Normal
 - Severe (Rusak berat)
