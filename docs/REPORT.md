@@ -567,7 +567,7 @@ class Config:
 
 File ini berfungsi untuk menyimpan seluruh parameter sistem. `DATA_DIR` menentukan lokasi root directory dan `MODEL_DIR` menentukan lokasi penyimpanan model trained dan checkpoint. Dimensi input ditetapkan 224x224 px yang merupakan standar MobileNetV2. `BATCH_SIZE` sebesar 32 dipilih untuk stabilitas komputasi, gradien efisiensi memori, serta regularisasi efek. `EPOCHS` sebesar 80 memberikan waktu cukup untuk model konvergen. `LEARNING_RATE` sebesar 0.001 sebagai default optimal untuk Adam Optimizer. 
 
-Weight assignment digunakan untuk mengatasi dataset yang tidak seimbang menggunakan strategi pengaturan weigths sebagai berikut:
+Weight assignment digunakan untuk mengatasi dataset yang tidak seimbang menggunakan strategi pengaturan weight sebagai berikut:
 - medium = 1.0
 - normal = 1.5
 - severe = 2.5
