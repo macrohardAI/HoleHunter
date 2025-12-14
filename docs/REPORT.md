@@ -606,7 +606,7 @@ if not exif_data:
     return None
 ```
 
-### **d. Melakukan iterasi pada semua EXIF tags untuk mencari tag "GPSInfro" yang berisi data lokasi**
+### **d. Melakukan iterasi pada semua EXIF tags untuk mencari tag "GPSInfo" yang berisi data lokasi**
 
 ```python
 for tag, value in exif_data.items():
