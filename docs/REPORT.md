@@ -1373,7 +1373,7 @@ if __name__ == "__main__":
 
 Evaluasi model dilakukan menggunakan dataset yang terdiri dari 70 gambar untuk masing-masing kelas (Medium, Normal, dan Severe). Dataset tersebut dibagi dengan skema pembagian 70% untuk training, 15% untuk testing, dan 15% untuk validasi. Tujuannya adalah memperkaya variasi data pembelajaran, data training juga telah melalui proses augmentasi sebesar 10 kali lipat.
 
-Berdasarkan hasil pengujian pada data test, model menunjukkan performa yang sangat baik dan siap untuk digunakan. Pada kelas Medium, model berhasil memprediksi 10 foto berlabel "medium" dengan tepat, di mana terdapat 0 kesalahan prediksi ke "normal" dan 2 kesalahan prediksi ke "severe". Pada kelas Normal, model mencapai akurasi sempurna dengan memprediksi 11 foto berlabel "normal", tanpa ada kesalahan ke kelas "medium" maupun "severe". Terakhir, pada kelas Severe, model berhasil memprediksi 10 foto berlabel "severe", dengan 0 kesalahan ke "medium" dan 0 kesalahan ke "normal".
+Berdasarkan hasil pengujian pada data test, model menunjukkan potensi yang baik pada skala eksperimen terbatas. Pada kelas Medium, model berhasil memprediksi 10 foto berlabel "medium" dengan tepat, di mana terdapat 0 kesalahan prediksi ke "normal" dan 2 kesalahan prediksi ke "severe". Pada kelas Normal, model mencapai akurasi sempurna dengan memprediksi 11 foto berlabel "normal", tanpa ada kesalahan ke kelas "medium" maupun "severe". Terakhir, pada kelas Severe, model berhasil memprediksi 10 foto berlabel "severe", dengan 0 kesalahan ke "medium" dan 0 kesalahan ke "normal".
 
 ![Demo Sistem](../training_resul2.jpg)
 
