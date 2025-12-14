@@ -517,7 +517,7 @@ def save_model(self, path: str = './models/trained_model.keras') -> None:
 
 Model disimpan dalam format `.keras` yang menyimpan arsitektur model, bobot trained, optimizer state, dan compile configuration.
 
-### **2.5 Confusion Matrix**
+### **3.5 Confusion Matrix**
 
 ```python
 def confusion_matrix(self, test_generator) -> np.ndarray:
@@ -574,11 +574,27 @@ Weight assignment digunakan untuk mengatasi dataset yang tidak imbang menggunaka
 
 ## Demo
 
-<!-- Insert demo -->
+## **Training Result**
+
+![Demo Sistem](../assets/demo.gif)
+
+Berdasarkan hasil training, model sudah sangat baik dan siap untuk digunakan. Dapat dilihat bahwa pada class medium, model berhasil memprediksi 10 foto berlabel "medium', 0 salah di "normal", dan 2 salah di "severe". Kemudian, pada class normal model berhasil memprediksi 11 foto berlabel "normal', 0 salah di "medium", dan 0 salah di "severe". Terakhir, pada class severe model berhasil memprediksi 10 foto berlabel "severe', 0 salah di "medium", dan 0 salah di "normal".
+
+
+## **Prediction Demo**
+![Demo Sistem](../assets/demo.gif)
+![Demo Sistem](../assets/demo.gif)
+![Demo Sistem](../assets/demo.gif)
+
+Sistem mengambil semua foto dari folder `bppselatanpredik/` kemudian dengan model AI yang telah dilatih sebelumnya akan membaca foto satu per satu. Model akan menebak tingkat kerusakan jalan dan mengklasifikasikannya ke tiga kelas yaitu medium, normal, atau severe. Setelah itu, sistem akan mengambil foto dengan metadata dan menandainya di peta interaktif dengan warna pin  berbeda-beda sesuai kelasnya.
+
+## **Map Demo**
+
+![Demo Sistem](../assets/demo.gif)
 
 ## Summary
 
-Sistem Mapping Jalan Berlubang di Kalimantan menggunakan metode CNN dapat disimpulkan bahwa sistem ini mampu mengklasifikasikan tingkat keparahan jalan berlubang menjadi tiga kelas yaitu medium, normal, dan severe. tbc tbc tbc..... Secara Keseluruhan, sistem yang dikembangkan menunjukkan bahwa metode CNN dengan model MobileNetV2 efektif untuk mengklasifikasikan jenis jalan berlubang di Kalimantan dan dapat diekmbangkan lebih lanjut sebagai pendukung pemeliharaan infrastruktur jalanan.
+Sistem Mapping Jalan Berlubang di Kalimantan menggunakan metode CNN dapat disimpulkan bahwa sistem ini mampu mengklasifikasikan tingkat keparahan jalan berlubang menjadi tiga kelas yaitu medium, normal, dan severe. Sistem juga mampu untuk menandai letak lubang dari foto yang diinput ke peta interaktif agar mempermudah pengguna untuk menemukannya. Secara Keseluruhan, sistem yang dikembangkan menunjukkan bahwa metode CNN dengan model MobileNetV2 efektif untuk mengklasifikasikan jenis jalan berlubang di Kalimantan dan dapat dikembangkan lebih lanjut sebagai pendukung pemeliharaan infrastruktur jalanan.
 
 ## References
 
