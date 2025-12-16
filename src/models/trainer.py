@@ -111,4 +111,4 @@ class Trainer:
             path = path + '.keras'
 
         self.model.save(path)
-        print(f"✅ Model saved to {path}")
+        print(f"Model saved to {path}")

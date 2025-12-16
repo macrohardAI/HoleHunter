@@ -57,7 +57,6 @@ class ModelBuilder:
         # Head Architecture
         x = layers.Dense(100, activation='relu')(x)
         x = layers.Dropout(0.2)(x) 
-        # ------------------------------------------------
 
 
         # Output layer

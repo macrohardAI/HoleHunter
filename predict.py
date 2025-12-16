@@ -117,8 +117,7 @@ def predict_batch(model_path: str, image_dir: str, config: Config = None):
         try:
             result = evaluator.predict_single(str(img_path))
             if result:
-                # 1. SISIPKAN INI: Simpan path gambar ke result
-                result['image_path'] = str(img_path)  # <--- TAMBAHAN PENTING
+                result['image_path'] = str(img_path)
 
                 results.append(result)
 
@@ -131,14 +130,12 @@ def predict_batch(model_path: str, image_dir: str, config: Config = None):
             print(f"  ⚠️  {img_path.name}: Error - {str(e)}")
             continue
 
-        # --- BAGIAN DISPLAY JUGA DITAMBAH ---
+        
     if results:
-        # 2. SISIPKAN INI: Panggil Map Generator
         print("\n" + "=" * 50)
-        MapGenerator.generate_map(results, 'laporan_peta_kerusakan.html')  # <--- TAMBAHAN PENTING
+        MapGenerator.generate_map(results, 'laporan_peta_kerusakan.html')
         print("=" * 50)
 
-        # Visualizer lama tetap jalan
         viz = Visualizer()
         viz.show_predictions(images_array, results)
 

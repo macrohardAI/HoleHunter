@@ -24,7 +24,7 @@ class GPSHelper:
             if not exif_data:
                 return None
 
-            # Cari tag GPSInfo
+            
             gps_info = {}
             for tag, value in exif_data.items():
                 decoded = ExifTags.TAGS.get(tag, tag)
@@ -47,6 +47,5 @@ class GPSHelper:
 
             return None
 
-        except Exception as e:
-            # print(f"⚠️ Error extracting GPS: {e}") # Uncomment untuk debug
+        except Exception:
             return None
