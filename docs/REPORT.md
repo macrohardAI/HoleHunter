@@ -14,24 +14,1452 @@
 
 ## Abstract
 
-<!-- Insert abstract -->
+Jalan berlubang dapat mengganggu kenyamanan pengendara di lalu lintas. Selain itu, jalan berlubang juga berpotensi membahayakan pengendara, terutama pengemudi sepeda motor di Kalimantan yang banyak menggunakan jalur darat untuk bepergian antar kota dan sangat bergantung pada kondisi jalan yang layak. Permasalahan tersebut mendorong penulis untuk mengembangkan suatu sistem yang mampu mengklasifikasikan tingkat kerusakan jalan berlubang berdasarkan citra digital yang dilengkapi metadata lokasi, dengan menerapkan metode Convolutional Neural Network (CNN).
+
+Keywords: Deep Learning, Transfer Learning, MobileNetV2, Road Pothole Detection, Image Classification
 
 ## Methods
 
-<!-- Insert methods -->
+Klasifikasi jalan berlubang menggunakan teknik klasifikasi gambar dengan lebih dari satu kelas menggunakan gambar input berukuran 224 px x 224 px RGB. Sistem  ini menggunakan Transfer Learning dengan MobileNetV2 sebagai base model. HoleHunter bertujuan untuk memprediksi tingkat keparahan kerusakan jalan dan  mengklasifikasikannya ke dalam salah satu dari tiga kelas yaitu:
+- Medium (Rusak ringan)
+- Normal
+- Severe (Rusak berat)
+
+## **2.1 MobileNetV2**
+Kami menggunakan transfer learning dengan MobileNetV2 sebagai base model karena efisiensinya untuk deployment pada perangkat mobile serta memiliki akurasi yang relatif tinggi dibandingkan model CNN lainnya dengan kompleksitas parameter yang lebih rendah.
+
+### **1. Input (224×224×3)**
+
+### **2. Rescaling Normalization**
+Input gambar dinormalisasi ke dalam rentang nilai [-1, 1], sesuai dengan kebutuhan arsitektur MobileNetV2.
+
+### **`model_builder.py`**
+```python
+# Line 47-48
+x = layers.Rescaling(1./127.5, offset=-1)(inputs)
+```
+$$x_{\text{normalized}} = \frac{x}{127.5} - 1$$
+
+### **3. MobileNetV2 Base (32_224_f)**
+
+MobileNetV2 mengubah citra input menjadi fitur-fitur penting, seperti tekstur permukaan jalan dan karakteristik lubang, yang kemudian digunakan sebagai representasi untuk proses klasifikasi.
+
+### **4.Global Average Pooling**
+
+Mengubah feature map (7 x 7 x 1280) menjadi vektor 1D (1280).
+
+### **`model_builder.py`**
+```python
+# Line 56
+x = layers.GlobalAveragePooling2D()(x)
+```
+
+$$\text{GAP}(x) = \frac{1}{H \times W} \sum_{i=1}^{H} \sum_{j=1}^{W} x_{i,j,k}$$
+
+### **5. Dense (Kernel 1280x100, bias 100)**
+
+### **6. Activation**
+
+### **`model_builder.py`**
+```python
+# Line 68-69
+x = layers.Dense(100, activation='relu')(x)
+```
+
+$$y = \text{ReLU}(W \cdot x + b)$$
+$$\text{ReLU}(z) = \max(0, z)$$
+
+di mana:
+- $W \in \mathbb{R}^{100 \times 1280}$
+- $x \in \mathbb{R}^{1280}$
+- $b \in \mathbb{R}^{100}$
+- $y \in \mathbb{R}^{100}$
+
+### **7. Dropout**
+
+### **8. Dense (Kernel 100x3, bias 3)**
+
+### **`model_builder.py`**
+```python
+# Line 74-77
+outputs = layers.Dense(
+    len(self.config.CLASS_NAMES),  # 3 classes
+    activation='softmax'
+)(x)
+```
+
+$$P(y = k | x) = \frac{e^{z_k}}{\sum_{j=1}^{C} e^{z_j}}$$
+
+di mana:
+- $z_k = W_k \cdot x + b_k$
+- $C = 3$ (jumlah kelas)
+- $\sum_{k=1}^{3} P(y=k|x) = 1$
+
+### **9. Dense_1**
+
+Output terakhir model
+
+## **2.2 Loss Function**
+
+Dataset jalan berlubang yang kami gunakan memiliki ketidakseimbangan kelas. Kami mengatasi masalah ini dengan menggunakan categorical cross-entropy dengan skema class weighting pada proses training dan memberikan bobot tertinggi pada kelas severe (2.5) untuk meningkatkan sensitivitas model terhadap kelas severe. 
+
+### **`model_builder.py`**
+```python
+# Line 84-86
+loss='categorical_crossentropy'
+```
+
+$$\mathcal{L} = -\frac{1}{N} \sum_{i=1}^{N} \sum_{j=1}^{C} w_{ij} \cdot y_{ij} \cdot \log(\hat{y}_{ij})$$
+
+di mana:
+- $N$ = jumlah sampel dalam batch
+- $C = 3$ = jumlah kelas
+- $y_{ij}$ = label ground truth (one-hot encoded)
+- $\hat{y}_{ij}$ = probabilitas prediksi dari softmax
+- $w_j$ = class weight untuk kelas $j$
+
+
+## **2.3. Optimizer**
+
+### **`model_builder.py`**
+```python
+# Line 81-86
+optimizer=keras.optimizers.Adam(
+    learning_rate=self.config.LEARNING_RATE,  # 0.001
+    clipnorm=1.0
+)
+```
+
+**a. Compute gradient**
+
+$$g_t = \nabla_\theta \mathcal{L}(\theta_{t-1})$$
+
+**b. Update biased first moment (momentum)**
+
+$$m_t = \beta_1 \cdot m_{t-1} + (1 - \beta_1) \cdot g_t$$
+
+**c. Update biased second moment (variance)**
+
+$$v_t = \beta_2 \cdot v_{t-1} + (1 - \beta_2) \cdot g_t^2$$
+
+**c. Bias correction**
+
+$$\hat{m}_t = \frac{m_t}{1 - \beta_1^t}$$
+$$\hat{v}_t = \frac{v_t}{1 - \beta_2^t}$$
+
+**d. Update parameters**
+
+$$\theta_t = \theta_{t-1} - \alpha \cdot \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon}$$
+
+**Default values di Keras:**
+- $\alpha = 0.001$ (learning rate dari config)
+- $\beta_1 = 0.9$
+- $\beta_2 = 0.999$
+- $\epsilon = 10^{-7}$
+
+## **2.4 Evaluation Metrics**
+
+### **`evaluator.py`**
+
+#### **Kode:**
+```python
+# Line 29-32
+metrics = {
+    'accuracy': accuracy_score(true_labels, pred_labels),
+    'precision': precision_score(true_labels, pred_labels, average='weighted'),
+    'recall': recall_score(true_labels, pred_labels, average='weighted'),
+    'f1': f1_score(true_labels, pred_labels, average='weighted')
+}
+```
+
+**Confusion Matrix (3×3):**
+
+$$CM = \begin{bmatrix}
+TP_0 & E_{01} & E_{02} \\
+E_{10} & TP_1 & E_{12} \\
+E_{20} & E_{21} & TP_2
+\end{bmatrix}$$
+
+**a. Accuracy:**
+
+$$\text{Accuracy} = \frac{TP_0 + TP_1 + TP_2}{\sum_{i,j} CM_{ij}}$$
+
+**b. Precision (per class):**
+
+$$\text{Precision}_k = \frac{TP_k}{\sum_{i} CM_{ik}}$$
+
+**c. Recall (per class):**
+
+$$\text{Recall}_k = \frac{TP_k}{\sum_{j} CM_{kj}}$$
+
+**d. F1-Score (per class):**
+
+$$F1_k = \frac{2 \cdot \text{Precision}_k \cdot \text{Recall}_k}{\text{Precision}_k + \text{Recall}_k}$$
+
+**e. Weighted Average:**
+
+$$\text{Metric}_{\text{weighted}} = \sum_{k=1}^{C} \frac{n_k}{N} \cdot \text{Metric}_k$$
+
+di mana:
+- $n_k$ = jumlah sampel kelas $k$.
 
 ## Implementation
 
-<!-- Insert implementation -->
+## **1. Struktur Arsitektur Model**
+
+### **`model_builder.py`**
+
+### **1.1 Struktur Arsitektur Model**
+
+```python
+class ModelBuilder:
+    def __init__(self, config: Config):
+        self.config = config
+```
+
+Kelas ModelBuilder berfungsi sebagai factory untuk membangun model Deep Learning. Konstruktor menerima  objek config yang mengandung seluruh konfigurasi sistem dan hyperparameter untuk memastikan konsistensi konfigurasi seluruh komponen
+
+### **1.2 Pemilihan dan Konfigurasi Base Model**
+
+```python
+elif self.config.BASE_MODEL == 'mobilenetv2':
+            # Alpha 1
+            base_model = keras.applications.MobileNetV2(
+                input_shape=(*self.config.IMG_SIZE, 3),
+                include_top=False,
+                weights='imagenet',
+                alpha=1 # Alpha=1
+            )
+```
+
+Method `build_base_model()` memuat model yang telah dilatih sebelumnya dari Keras Applications.
+`input_shape` menentukan dimensi input gambar seperti tinggi, lebar, dan channel RGB. `include_top` diatur `false` untuk menghilangkan fully-connected layer asli yang memungkinkan custom head.
+
+### **1.3 Fine-Tuning**
+
+```python
+base_model = keras.applications.MobileNetV2(
+    input_shape=(*self.config.IMG_SIZE, 3),
+    include_top=False,
+    weights='imagenet',
+    alpha= 1
+)
+base_model.trainable = False
+```
+
+MobileNetV2 menggunakan parameter `alpha = 1` untuk mengurangi jumlah parameter dan menghasilkan model yang lebih ringan dan cepat.
+
+### **1.4 Preprocessing Layer**
+
+```python
+elif self.config.BASE_MODEL == 'mobilenetv2':
+    x = layers.Rescaling(1./127.5, offset=-1)(inputs)
+```
+
+Preprocessing disesuaikan dengan arsitektur base model. Karena menggunakan MobileNetV2, maka normalisasi ke range [-1,1] menggunakan layer `Rescaling`.
+
+### **1.5 Feature Extraction dan Pooling**
+
+```python
+x = base_model(x, training=False)
+x = layers.GlobalAveragePooling2D()(x)
+```
+
+`training = False` memastikan batch normalization layers menggunakan statistik tetap dan `GlobalAveragePooling2D` mengonversi feature maps menjadi vektor 1D dengan averaging spatial dimensions untuk mengurangi parameter dan mencegah overfitting. 
+
+### **1.6 Classification Head**
+
+```python
+x = layers.Dense(100, activation='relu')(x)
+x = layers.Dropout(0.2)(x)
+```
+
+### **1.7 Output Layer**
+
+```python
+outputs = layers.Dense(
+    len(self.config.CLASS_NAMES),
+    activation='softmax'
+)(x)
+```
+
+Menggunakan jumlah neuron sesuai jumlah kelas, aktivasi softmax untuk probabilitas multi-class, dan output berupa distribusi probabilitas dengan jumlah  = 1.0.
+
+### **1.8 Kompilasi Model**
+
+```python
+def compile_model(self, model: tf.keras.Model) -> tf.keras.Model:
+    model.compile(
+        optimizer=keras.optimizers.Adam(
+            learning_rate=self.config.LEARNING_RATE,
+            clipnorm=1.0
+        ),
+        loss='categorical_crossentropy',
+        metrics=['accuracy']
+    )
+```
+
+`compile_model` digunakan untuk mengkonfigurasi proses pembelajaran model dengan Adam Optimizer sebagai optimalisasinya dan Categorical Crossentropy sebagai Loss Function untuk klasifikasi multi-class, serta accuracy sebagai metrik evaluasi.
+
+
+## **2. Evaluasi Model**
+
+### **`evaluator.py`**
+
+### **2.1 Struktur Model Evaluator**
+
+```python
+class ModelEvaluator:
+    def __init__(self, model: tf.keras.Model, config):
+        self.model = model
+        self.config = config
+```
+
+Kelas `ModelEvaluator` menerima trained model dan config object untuk melakukan berbagai jenis evaluasi.
+
+### **2.2 Evaluasi Komprehensif**
+
+```python
+def evaluate(self, test_generator) -> dict:
+    predictions = self.model.predict(test_generator)
+    pred_labels = np.argmax(predictions, axis=1)
+    true_labels = test_generator.labels
+```
+
+Proses evaluasi dilakukan dengan cara menghasilkan prediksi untuk seluruh test set lalu mengonversi probabilitas ke class labels dengan `argmax`. Terakhir, diekstrak true labels dari generator.
+
+### **2.3 Perhitungan Metrik**
+
+```python
+metrics = {
+    'accuracy': accuracy_score(true_labels, pred_labels),
+    'precision': precision_score(true_labels, pred_labels, average='weighted'),
+    'recall': recall_score(true_labels, pred_labels, average='weighted'),
+    'f1': f1_score(true_labels, pred_labels, average='weighted')
+}
+```
+
+### **2.4 Classification Report**
+
+```python
+print(classification_report(
+    true_labels,
+    pred_labels,
+    target_names=self.config.CLASS_NAMES
+))
+```
+
+Report ini menampilkan precision, recall, F1-score untuk setiap class secara detail.
+
+### **2.5 Confusion Matrix**
+
+```python
+def confusion_matrix(self, test_generator) -> np.ndarray:
+    cm = confusion_matrix(true_labels, pred_labels)
+```
+
+Confusion matrix menunjukkan distribusi prediksi benar dan salah antar class.
+
+### **2.6 Prediksi Single Image**
+
+```python
+def predict_single(self, image_path: str) -> dict:
+        """Predict on a single image"""
+        try:
+            # Load and preprocess image
+            img = Image.open(image_path).convert('RGB')
+            img = img.resize(self.config.IMG_SIZE, Image.Resampling.LANCZOS)
+            img_array = np.array(img)  
+            img_array = np.expand_dims(img_array, axis=0)
+
+            # Make prediction
+            prediction = self.model.predict(img_array, verbose=0)
+            confidence = np.max(prediction)
+            class_idx = np.argmax(prediction)
+            class_name = self.config.CLASS_NAMES[class_idx]
+
+            result = {
+                'class': class_name,
+                'confidence': float(confidence),
+                'probabilities': {
+                    self.config.CLASS_NAMES[i]: float(prediction[0][i])
+                    for i in range(len(self.config.CLASS_NAMES))
+                }
+            }
+
+            return result
+```
+
+`predict_single` digunakan untuk melakukan inferensi pada satu gambar jalan dengan cara memuat dan memproses gambar agar sesuai dengan format input MobileNetV2, melakukan prediksi menggunakan model CNN yang telah dilatih, lalu mengembalikan hasil klasifikasi berupa class kerusakan jalan, confidence score, dan probabilitas. 
+
+## **3. Training**
+
+### **`trainer.py`**
+
+### **3.1 Struktur trainer**
+
+```python
+class Trainer:
+    def __init__(self, config: Config):
+        self.config = config
+        self.model = None
+        self.history = None
+```
+
+Kelas `Trainer` mengenkapsulasi seluruh proses training dengan menyimpan config, model, dan training history.
+
+### **3.2 Setup Callbacks**
+
+```python
+def setup_callbacks(self, model_dir='./models') -> list:
+        """Create ModelCheckpoint, EarlyStopping, ReduceLROnPlateau, TensorBoard"""
+        Path(model_dir).mkdir(parents=True, exist_ok=True)
+        
+        callbacks = [
+            # Save best model based on validation accuracy
+            ModelCheckpoint(
+                filepath=os.path.join(model_dir, 'best_model.keras'),
+                monitor='val_accuracy',
+                save_best_only=True,
+                verbose=1
+            ),
+
+            # Stop training if validation loss doesn't improve
+            EarlyStopping(
+                monitor='val_loss',
+                patience=15,
+                restore_best_weights=True,
+                verbose=1
+            ),
+
+            # Reduce learning rate if validation loss plateaus
+            ReduceLROnPlateau(
+                monitor='val_loss',
+                factor=0.3,
+                patience=7,
+                verbose=1,
+                min_lr=1e-7
+            ),
+
+            # TensorBoard logging
+            TensorBoard(
+                log_dir=os.path.join(model_dir, 'logs'),
+                histogram_freq=1
+            )
+        ]
+
+        return callbacks
+```
+
+`ModelCheckpoint` menyimpan model terbaik berdasarkan validation accuracy. Hanya model dengan performa terbaik yang disimpan untuk mencegah overfitting. `EarlyStopping` menghentikan training jika validation loss tidak membaik setelah 15 epochs. Parameter `restore_best_weights = True` mengembalikan bobot  terbaik saat training dihentikan. `ReduceLRONPlateau` mengurangi learning rate sebesar 30% jika validation loss mengalami plateau selama 7 epochs. Strategi ini membantu model menemukan minimum yang lebih baik dengan learning rate lebih kecil. `TensorBoard` adalah logging untuk visualisasi training di TensorBoard.
+
+### **3.3 Main Training Loop**
+
+```python
+def train(
+        self,
+        train_generator,
+        val_generator,
+        model_dir='./models'
+    ) -> History:
+        """Main training loop"""
+        print("=" * 60)
+        print("Starting Training")
+        print("=" * 60)
+
+        # Build and compile model
+        builder = ModelBuilder(self.config)
+        self.model = builder.build_full_model()
+        self.model = builder.compile_model(self.model)
+
+        print(self.model.summary())
+
+        # Setup callbacks
+        callbacks = self.setup_callbacks(model_dir)
+
+        # Train model
+        self.history = self.model.fit(
+            train_generator,
+            epochs=self.config.EPOCHS,
+            validation_data=val_generator,
+            callbacks=callbacks,
+            class_weight=self.config.CLASS_WEIGHTS,  # Apply class weights
+            verbose=1
+        )
+
+        print("=" * 60)
+        print("Training Complete!")
+        print("=" * 60)
+
+        return self.history
+```
+
+Training dimulai dengan build model menggunakan ModelBuilder lalu model di compile dengan optimizer dan loss function. Setelah itu model summary ditampilkan untuk  verifikasi arsitektur model.
+
+### **3.4 Model Saving**
+
+```python
+def save_model(self, path: str = './models/trained_model.keras') -> None:
+        """Save trained model in .keras format (Keras 3 compatible)"""
+        if self.model is None:
+            raise ValueError("No model to save. Train the model first.")
+
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
+
+        # Ensure path ends with .keras
+        if not path.endswith('.keras'):
+            path = path + '.keras'
+
+        self.model.save(path)
+        print(f"Model saved to {path}")
+```
+
+Model disimpan dalam format `.keras` yang menyimpan arsitektur model, bobot yang telah dilatih, optimizer state, dan konfigurasi kompilasi.
+
+### **3.5 Confusion Matrix**
+
+```python
+def confusion_matrix(self, test_generator) -> np.ndarray:
+    cm = confusion_matrix(true_labels, pred_labels)
+```
+
+Confusion matrix menunjukkan distribusi prediksi benar dan salah antar class.
+
+## **4. Package Initialization**
+
+### **`init.py`**
+
+```python
+"""Models package"""
+from .model_builder import ModelBuilder
+from .trainer import Trainer
+from .evaluator import ModelEvaluator
+
+__all__ = ['ModelBuilder', 'Trainer', 'ModelEvaluator']
+```
+
+File ini membuat directory `models/` menjadi Python package dengan membaca class dari submodules ke package level dan mendefinisikan public API yang akan di-export saat `from models import *`.
+
+## **5. Konfigurasi Sistem**
+
+### **`config.py`**
+
+```python
+class Config:
+    # Paths
+    DATA_DIR: str = "./data"
+    MODEL_DIR: str = "./models"
+
+    IMG_SIZE: tuple = (224, 224)
+    BATCH_SIZE: int = 32  # Smaller batch size for more stable training
+    EPOCHS: int = 80  # More epochs to allow better convergence
+    LEARNING_RATE: float = 0.001  # Lower learning rate for more stable training
+
+    BASE_MODEL: str = "mobilenetv2"
+
+    # Classes
+    CLASS_NAMES: list = ['medium', 'normal', 'severe']
+
+    # Increase weight for severe class since it's being misclassified
+    CLASS_WEIGHTS: dict = {0: 1.0, 1: 1.5, 2: 2.5}  # medium, normal, severe
+```
+
+File ini berfungsi untuk menyimpan seluruh parameter sistem. `DATA_DIR` menentukan lokasi root directory dan `MODEL_DIR` menentukan lokasi penyimpanan model trained dan checkpoint. Dimensi input ditetapkan 224x224 px yang merupakan standar MobileNetV2. `BATCH_SIZE` sebesar 32 dipilih untuk stabilitas komputasi, gradien efisiensi memori, serta regularisasi efek. `EPOCHS` sebesar 80 memberikan waktu cukup untuk model konvergen. `LEARNING_RATE` sebesar 0.001 sebagai default optimal untuk Adam Optimizer. 
+
+Weight assignment digunakan untuk mengatasi dataset yang tidak seimbang menggunakan strategi pengaturan weight sebagai berikut:
+- medium = 1.0
+- normal = 1.5
+- severe = 2.5
+
+## **6. Helpers**
+
+### **`6.1 gps_utils.py`**
+
+### **a. Konversi GPS ke DMS**
+
+```python
+@staticmethod
+def get_decimal_from_dms(dms, ref):
+    degrees = dms[0]
+    minutes = dms[1] / 60.0
+    seconds = dms[2] / 3600.0
+    decimal = degrees + minutes + seconds
+    if ref in ['S', 'W']:
+        decimal = -decimal
+    return decimal
+```
+
+### **b. Ekstrak koordinat GPS dari metadata foto**
+
+```python
+@staticmethod
+def get_coordinates(image_path):
+    img = Image.open(image_path)
+    exif_data = img._getexif()
+```
+
+### **c. Cek apakah foto memiliki metadata EXIF**
+
+```python
+exif_data = img._getexif()
+if not exif_data:
+    return None
+```
+
+### **d. Melakukan iterasi pada semua EXIF tags untuk mencari tag "GPSInfo" yang berisi data lokasi**
+
+```python
+for tag, value in exif_data.items():
+    decoded = ExifTags.TAGS.get(tag, tag)
+    if decoded == "GPSInfo":
+        gps_info = value
+        break
+```
+
+### **e. Ekstrak komponen GPS**
+
+```python
+lat_ref = gps_info.get(1)   # 'N' atau 'S'
+lat_dms = gps_info.get(2)   # (degrees, minutes, seconds)
+lon_ref = gps_info.get(3)   # 'E' atau 'W'
+lon_dms = gps_info.get(4)   # (degrees, minutes, seconds)
+```
+
+### **f. Konversi ke desimal**
+
+```python
+lat = GPSHelper.get_decimal_from_dms(lat_dms, lat_ref)
+lon = GPSHelper.get_decimal_from_dms(lon_dms, lon_ref)
+return lat, lon
+```
+
+### **`6.2 map_generator.py`**
+
+### **a. Konversi foto menjadi Base64 untuk embed di HTML**
+
+```python
+@staticmethod
+def encode_image(image_path, max_size=(300, 300)):
+    img = Image.open(image_path)
+    img.thumbnail(max_size)
+    buffered = BytesIO()
+    img.save(buffered, format="JPEG", quality=70)
+    img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
+    return f"data:image/jpeg;base64,{img_str}"
+```
+
+### **b. Persistent storage untuk riwayat titik-titik di peta**
+
+```python
+[
+  {
+    "lat": -6.2084722,
+    "lon": 106.8456789,
+    "class": "severe",
+    "conf": 0.8701,
+    "img_name": "20251201_152632.jpg",
+    "full_path": "/path/to/image.jpg"
+  }
+]
+```
+
+### **c. Load history dan filter duplikat**
+
+```python
+history_points = MapGenerator.load_history()
+existing_files = {item['img_name'] for item in history_points}
+
+new_points = []
+for item in new_predictions:
+    img_name = Path(img_path).name
+    if img_name in existing_files: continue  # Skip duplikat
+```
+
+
+### **d. Ekstrak koordinat GPS**
+
+```python
+coords = GPSHelper.get_coordinates(img_path)
+if coords:
+    lat, lon = coords
+    new_points.append({
+        'lat': lat, 'lon': lon,
+        'class': item['class'],
+        'conf': float(item['confidence']),
+        'img_name': img_name,
+        'full_path': str(img_path)
+    })
+```
+
+### **e. Setup peta dan center point**
+
+```python
+avg_lat = sum(p['lat'] for p in total_points) / len(total_points)
+avg_lon = sum(p['lon'] for p in total_points) / len(total_points)
+m = folium.Map(location=[avg_lat, avg_lon], zoom_start=15)
+```
+
+### **f. setup layer groups**
+
+```python
+layer_severe = folium.FeatureGroup(name='Severe (Parah)', show=True)
+layer_medium = folium.FeatureGroup(name='Medium (Sedang)', show=True)
+layer_normal = folium.FeatureGroup(name='Normal (Aman)', show=False)
+
+```
+### **g. Generate pins**
+
+```python
+for point in total_points:
+    # Tentukan warna & icon berdasarkan class
+    if cls == 'severe':
+        color, icon = 'red', 'exclamation-sign'
+    elif cls == 'medium':
+        color, icon = 'orange', 'warning-sign'
+    else:
+        color, icon = 'green', 'ok-sign'
+```
+
+### **h. Popup HTML**
+```python
+popup_html = f"""
+<div style="font-family: Arial; width: 300px;">
+    <h4>Status: {point['class'].upper()}</h4>
+    <p>Akurasi: <b>{point['conf']:.2%}</b></p>
+    <img src="{img_src}" style="width:100%;">
+    <p style="font-size:10px;">{point['img_name']}</p>
+</div>
+"""
+```
+
+### **i. Tambah ke peta**
+```python
+popup_html = f"""
+<div style="font-family: Arial; width: 300px;">
+    <h4>Status: {point['class'].upper()}</h4>
+    <p>Akurasi: <b>{point['conf']:.2%}</b></p>
+    <img src="{img_src}" style="width:100%;">
+    <p style="font-size:10px;">{point['img_name']}</p>
+</div>
+"""
+```
+
+### **j. Finalisasi**
+```html
+popup_html = f"""
+<div style="font-family: Arial; width: 300px;">
+    <h4>Status: {point['class'].upper()}</h4>
+    <p>Akurasi: <b>{point['conf']:.2%}</b></p>
+    <img src="{img_src}" style="width:100%;">
+    <p style="font-size:10px;">{point['img_name']}</p>
+</div>
+"""
+```
+
+### **`6.3 visualizer.py`**
+
+### **a. Menghasilkan  2 grafik accuracy dan loss**
+
+```python
+@staticmethod
+def plot_training_history(history: History, save_path: str = None):
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+```
+
+### **b. Grafik accuracy**
+
+```python
+axes[0].plot(history.history['accuracy'], label='Training Accuracy')
+axes[0].plot(history.history['val_accuracy'], label='Validation Accuracy')
+axes[0].set_title('Model Accuracy')
+axes[0].legend()
+axes[0].grid(alpha=0.3)
+```
+
+### **c. Grafik Loss**
+
+```python
+axes[1].plot(history.history['loss'], label='Training Loss')
+axes[1].plot(history.history['val_loss'], label='Validation Loss')
+```
+
+
+### **d. Visualisasi  confusion matrix dengan heatmap**
+
+```python
+@staticmethod
+def plot_confusion_matrix(cm: np.ndarray, class_names: list, save_path: str = None):
+    sns.heatmap(
+        cm,
+        annot=True,      # Show angka di kotak
+        fmt='d',         # Format integer
+        cmap='Blues',    # Color scheme
+        xticklabels=class_names,
+        yticklabels=class_names,
+        cbar_kws={'label': 'Count'}
+    )
+```
+
+### **e. Tampilkan grid gambar dengan  prediksi model**
+
+```python
+@staticmethod
+def show_predictions(images: list, predictions: list, true_labels: list = None, 
+                    class_names: list = None, cols: int = 4):
+    rows = (num_images + cols - 1) // cols
+    fig, axes = plt.subplots(rows, cols, figsize=(15, rows * 3))
+```
+
+### **f. Layout grid**
+
+```python
+for idx, (image, prediction) in enumerate(zip(images, predictions)):
+    row = idx // cols
+    col = idx % cols
+    ax = axes[row, col]
+```
+
+### **g. Image dan info**
+```python
+ax.imshow(image)
+pred_class = prediction.get('class', 'Unknown')
+confidence = prediction.get('confidence', 0)
+title = f"Pred: {pred_class}\nConfidence: {confidence:.2%}"
+```
+
+## **7. `predict.py`**
+
+### **a. Memprediksi satu gambar jalan menggunakan model yang telah dilatih**
+
+Membuat model .keras dengan memproses satu gambar input. Kemudian, model akan mengklasifikasikan tingkat kerusakan jalan dan menampilkan hasil prediksi. Setelah itu, sistem akan memperbarui peta kerusakan jalan dan menampilkan visualisasi gambar.
+
+```python
+def predict_image(model_path: str, image_path: str, config: Config = None):
+    """Predict on a single image"""
+    if config is None:
+        config = Config()
+
+    if not model_path.endswith('.keras') and not model_path.endswith('.h5'):
+        model_path = model_path + '.keras'
+
+    print(f"\nLoading model from: {model_path}")
+    try:
+        model = tf.keras.models.load_model(model_path)
+    except ValueError as e:
+        if "Unknown layer" in str(e):
+            print(f"Error loading model. Trying to rebuild from architecture...")
+            # Fallback: rebuild model if loading fails
+            from models.model_builder import ModelBuilder
+            builder = ModelBuilder(config)
+            model = builder.build_full_model()
+            model = builder.compile_model(model)
+            print("Model rebuilt. Note: weights may not be loaded.")
+        else:
+            raise
+
+    print(f"Predicting on: {image_path}")
+    evaluator = ModelEvaluator(model, config)
+
+    result = evaluator.predict_single(image_path)
+
+    if result:
+        result['image_path'] = str(image_path)
+        print("\n" + "=" * 50)
+        print("PREDICTION RESULT")
+        print("=" * 50)
+        print(f"Image: {Path(image_path).name}")
+        print(f"Classification: {result['class']}")
+        print(f"Confidence: {result['confidence']:.2%}")
+        print(f"\nProbabilities for all classes:")
+        sorted_probs = sorted(result['probabilities'].items(), key=lambda x: x[1], reverse=True)
+        for class_name, prob in sorted_probs:
+            bar_length = int(prob * 30)  # Visual bar representation
+            bar = "█" * bar_length + "░" * (30 - bar_length)
+            print(f"  {class_name:20s}: [{bar}] {prob:.4f} ({prob*100:.2f}%)")
+        print("=" * 50)
+
+        print("\nUpdating Map...")
+        MapGenerator.generate_map([result], 'laporan_peta_kerusakan.html')
+        print("=" * 50)
+
+        # Display image
+        try:
+            img = Image.open(image_path)
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+            viz = Visualizer()
+            viz.show_predictions([np.array(img)], [result])
+        except Exception as e:
+            print(f"Could not display image: {e}")
+
+    return result
+
+```
+
+### **b. Melakukan Prediksi pada banyak gambar dalam satu folder**
+
+Disini, model CNN akan dimuat untuk membaca seluruh gambar di dalam direktori. Model akan memprediksi setiap gambar satu per satu dan menyimpan hasil prediksi ke dalam list. Kemudian, sistem membuat peta kerusakan jalan berbasis hasil batch dan menampilkan visualisasi seluruh gambar.
+
+```python
+def predict_batch(model_path: str, image_dir: str, config: Config = None):
+    """Predict on multiple images in a directory"""
+    if config is None:
+        config = Config()
+
+    if not model_path.endswith('.keras') and not model_path.endswith('.h5'):
+        model_path = model_path + '.keras'
+
+    print(f"\nLoading model from: {model_path}")
+    try:
+        model = tf.keras.models.load_model(model_path)
+    except ValueError as e:
+        if "Unknown layer" in str(e):
+            print(f"Error loading model. Trying to rebuild from architecture...")
+            from models.model_builder import ModelBuilder
+            builder = ModelBuilder(config)
+            model = builder.build_full_model()
+            model = builder.compile_model(model)
+            print("Model rebuilt. Note: weights may not be loaded.")
+        else:
+            raise
+
+    image_dir = Path(image_dir)
+    image_extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.heic'}
+    images = [f for f in image_dir.iterdir() if f.suffix.lower() in image_extensions]
+
+    if not images:
+        print(f"No images found in {image_dir}")
+        return
+
+    print(f"Found {len(images)} images to predict")
+
+    evaluator = ModelEvaluator(model, config)
+    results = []
+    images_array = []
+
+    for img_path in images:
+        try:
+            result = evaluator.predict_single(str(img_path))
+            if result:
+                # 1. SISIPKAN INI: Simpan path gambar ke result
+                result['image_path'] = str(img_path)  # <--- TAMBAHAN PENTING
+
+                results.append(result)
+
+                img = Image.open(img_path)
+                if img.mode != 'RGB':
+                    img = img.convert('RGB')
+                images_array.append(np.array(img))
+                print(f"{img_path.name}: {result['class']} ({result['confidence']:.2%})")
+        except Exception as e:
+            print(f"{img_path.name}: Error - {str(e)}")
+            continue
+
+        # --- BAGIAN DISPLAY JUGA DITAMBAH ---
+    if results:
+        # 2. SISIPKAN INI: Panggil Map Generator
+        print("\n" + "=" * 50)
+        MapGenerator.generate_map(results, 'laporan_peta_kerusakan.html')  # <--- TAMBAHAN PENTING
+        print("=" * 50)
+
+        # Visualizer lama tetap jalan
+        viz = Visualizer()
+        viz.show_predictions(images_array, results)
+
+    return results
+
+
+if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Predict on images using trained model')
+    parser.add_argument('--model', default='models/trained_model.keras',
+                        help='Path to trained model (.keras format)')
+    parser.add_argument('--image', help='Path to single image for prediction')
+    parser.add_argument('--batch', help='Directory of images for batch prediction')
+
+    args = parser.parse_args()
+
+    config = Config()
+
+    if args.image:
+        predict_image(args.model, args.image, config)
+    elif args.batch:
+        predict_batch(args.model, args.batch, config)
+    else:
+        print("Please provide either --image or --batch argument")
+        print(f"Usage: python predict.py --image <image_path>")
+        print(f"       python predict.py --batch <directory>")
+```
+## **7. `augmented.py`**
+
+### **a. Kelas utama untuk augmentasi data gambar**
+
+```python
+class DataAugmentor:
+    """Data augmentation class for generating multiple variants of images"""
+
+```
+
+### **b. Mengatur random seed agar hasil augmentasi konsisten**
+
+```python
+def __init__(self, seed=42):
+        """
+        Initialize augmentor
+
+        Args:
+            seed: Random seed for reproducibility
+        """
+        self.seed = seed
+        random.seed(seed)
+        np.random.seed(seed)
+```
+
+### **c. Memutar gambar secara acak dalam rentang sudut tertentu**
+
+```python
+def rotate(image, angle_range=30):
+        """Randomly rotate image"""
+        angle = random.randint(-angle_range, angle_range)
+        return image.rotate(angle, fillcolor='white', expand=False)
+```
+
+### **d. Membalik gambar secara horizontal**
+
+```python
+@staticmethod
+    def horizontal_flip(image):
+        """Horizontal flip"""
+        return image.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+```
+
+### **e. Membalik gambar secara vertikal**
+
+```python
+@staticmethod
+    def vertical_flip(image):
+        """Vertical flip"""
+        return image.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
+```
+
+### **f. Memperbesar gambar secara acak dengan cara crop lalu resize**
+
+```python
+ @staticmethod
+    def zoom(image, zoom_range=0.2):
+        """Random zoom (crop and resize)"""
+        width, height = image.size
+        zoom_factor = 1 + random.uniform(-zoom_range, zoom_range)
+
+        new_width = int(width / zoom_factor)
+        new_height = int(height / zoom_factor)
+
+        # Center crop
+        left = (width - new_width) // 2
+        top = (height - new_height) // 2
+        right = left + new_width
+        bottom = top + new_height
+
+        cropped = image.crop((left, top, right, bottom))
+        return cropped.resize((width, height), Image.Resampling.LANCZOS)
+```
+
+### **g. Menggeser posisi gambar secara acak**
+
+```python
+ @staticmethod
+    def shift(image, shift_range=0.15):
+        """Random shift (translation)"""
+        width, height = image.size
+
+        shift_x = int(width * random.uniform(-shift_range, shift_range))
+        shift_y = int(height * random.uniform(-shift_range, shift_range))
+
+        # Create new image with white background
+        new_image = Image.new('RGB', (width, height), 'white')
+        new_image.paste(image, (shift_x, shift_y))
+
+        return new_image
+```
+
+### **h. Mengubah kecerahan gambar secara acak**
+
+```python
+ @staticmethod
+    def brightness(image, brightness_range=0.3):
+        """Random brightness adjustment"""
+        factor = random.uniform(1 - brightness_range, 1 + brightness_range)
+        enhancer = ImageEnhance.Brightness(image)
+        return enhancer.enhance(factor)
+```
+
+### **i. Mengubah kontras gambar secara acak**
+
+```python
+ @staticmethod
+    def contrast(image, contrast_range=0.3):
+        """Random contrast adjustment"""
+        factor = random.uniform(1 - contrast_range, 1 + contrast_range)
+        enhancer = ImageEnhance.Contrast(image)
+        return enhancer.enhance(factor)
+```
+
+### **j. Mengubah kejenuhan warna gambar**
+
+```python
+ @staticmethod
+    def saturation(image, saturation_range=0.3):
+        """Random saturation adjustment"""
+        factor = random.uniform(1 - saturation_range, 1 + saturation_range)
+        enhancer = ImageEnhance.Color(image)
+        return enhancer.enhance(factor)
+```
+
+### **k. Menggeser hue warna gambar**
+
+```python
+@staticmethod
+    def hue_shift(image, hue_range=30):
+        """Random hue shift (color rotation)"""
+        # Convert to HSV
+        hsv_image = image.convert('HSV')
+        pixels = hsv_image.load()
+        width, height = hsv_image.size
+
+        hue_shift = random.randint(-hue_range, hue_range)
+
+        for y in range(height):
+            for x in range(width):
+                h, s, v = pixels[x, y]
+                # Shift hue
+                h = (h + hue_shift) % 256
+                pixels[x, y] = (h, s, v)
+
+        return hsv_image.convert('RGB')
+```
+
+### **l. Memberikan efek blur gaussian ringan agar model lebih terbiasa terhadap gambar buram**
+
+```python
+ @staticmethod
+    def gaussian_blur(image, radius_range=(0.1, 0.5)):
+        """Random gaussian blur"""
+        radius = random.uniform(*radius_range)
+        return image.filter(__import__('PIL.ImageFilter', fromlist=['GaussianBlur']).GaussianBlur(radius))
+```
+
+### **m. Transformasi shear untuk mensimulasikan sudut pengambilan gambar berbeda**
+
+```python
+@staticmethod
+    def shear(image, shear_range=0.2):
+        """Random shear transformation"""
+        width, height = image.size
+        shear_factor = random.uniform(-shear_range, shear_range)
+
+        # Shear transformation coefficients
+        shear_matrix = (
+            1, shear_factor, -shear_factor * height / 2,
+            0, 1, 0
+        )
+
+        return image.transform((width, height), Image.Transform.AFFINE, shear_matrix, Image.Resampling.BILINEAR)
+```
+
+### **n. Menghasilkan banyak versi augmented dari satu gambar**
+
+```python
+def augment_image(self, image, num_variants=10):
+        """
+        Generate multiple augmented variants of an image
+
+        Args:
+            image: PIL Image object
+            num_variants: Number of augmented variants to create
+
+        Returns:
+            List of augmented PIL Image objects
+        """
+        augmented_images = [image.copy()]  # Include original
+
+        augmentation_functions = [
+            lambda img: self.rotate(img),
+            lambda img: self.horizontal_flip(img),
+            lambda img: self.zoom(img),
+            lambda img: self.shift(img),
+            lambda img: self.brightness(img),
+            lambda img: self.contrast(img),
+            lambda img: self.saturation(img),
+            lambda img: self.shear(img),
+            lambda img: self.gaussian_blur(img),
+        ]
+
+        # Generate variants by combining augmentations
+        for i in range(num_variants):
+            img = image.copy()
+
+            # Apply 1-3 random augmentations
+            num_transforms = random.randint(1, 3)
+            selected_transforms = random.sample(augmentation_functions, num_transforms)
+
+            for transform in selected_transforms:
+                try:
+                    img = transform(img)
+                except Exception as e:
+                    print(f"Warning: Augmentation failed: {e}")
+
+            augmented_images.append(img)
+
+        return augmented_images
+```
+
+### **o. Melakukan augmentasi untuk seluruh dataset di dalam folder**
+
+```python
+def augment_dataset(
+        input_dir,
+        output_dir=None,
+        num_variants=10,
+        augment_in_place=False,
+        image_extensions=None
+):
+    """
+    Augment all images in a directory structure
+
+    Args:
+        input_dir: Input directory (can be data/raw or data/processed)
+        output_dir: Output directory (if None and augment_in_place=False, creates augmented/ subdirectory)
+        num_variants: Number of augmented variants per image
+        augment_in_place: If True, add augmented images to same directory. If False, create new structure.
+        image_extensions: List of image extensions to process (default: jpg, jpeg, png, bmp, heic)
+    """
+
+    if image_extensions is None:
+        image_extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.heic'}
+
+    input_path = Path(input_dir)
+
+    if not input_path.exists():
+        raise ValueError(f"Input directory not found: {input_dir}")
+
+    # Determine output directory
+    if output_dir is None:
+        if augment_in_place:
+            output_path = input_path
+        else:
+            output_path = input_path.parent / f"{input_path.name}_augmented"
+    else:
+        output_path = Path(output_dir)
+
+    augmentor = DataAugmentor()
+    total_originals = 0
+    total_generated = 0
+
+    print("=" * 70)
+    print("Data Augmentation")
+    print("=" * 70)
+    print(f"Input:  {input_path}")
+    print(f"Output: {output_path}")
+    print(f"Variants per image: {num_variants}")
+    print("=" * 70)
+
+    # Find all image files
+    for class_dir in sorted(input_path.iterdir()):
+        if not class_dir.is_dir():
+            continue
+
+        class_name = class_dir.name
+        print(f"\nProcessing class: {class_name}")
+        print("-" * 70)
+
+        # Get images in this class
+        images = [
+            f for f in class_dir.iterdir()
+            if f.suffix.lower() in image_extensions
+        ]
+
+        if not images:
+            print(f"  No images found")
+            continue
+
+        print(f"  Found {len(images)} images")
+
+        # Create output directory
+        output_class_dir = output_path / class_name
+        output_class_dir.mkdir(parents=True, exist_ok=True)
+
+        class_total_generated = 0
+
+        for i, image_path in enumerate(images):
+            try:
+                # Open and convert image
+                img = Image.open(image_path).convert('RGB')
+
+                # Generate augmented variants
+                augmented = augmentor.augment_image(img, num_variants=num_variants)
+
+                # Save original
+                original_name = image_path.stem
+                original_ext = image_path.suffix
+
+                if augment_in_place:
+                    # Save original back if not already there
+                    original_out = output_class_dir / image_path.name
+                    if not original_out.exists():
+                        img.save(original_out, quality=95)
+                else:
+                    original_out = output_class_dir / image_path.name
+                    img.save(original_out, quality=95)
+
+                # Save augmented variants (skip first one which is original)
+                for variant_idx, aug_img in enumerate(augmented[1:], 1):
+                    variant_name = f"{original_name}_aug_{variant_idx:02d}{original_ext}"
+                    variant_path = output_class_dir / variant_name
+                    aug_img.save(variant_path, quality=95)
+                    class_total_generated += 1
+
+                total_originals += 1
+                total_generated += num_variants
+
+                if (i + 1) % 5 == 0:
+                    print(f"  Processed {i + 1}/{len(images)} images...")
+
+            except Exception as e:
+                print(f"  Error processing {image_path.name}: {e}")
+
+        print(f"  Generated: {num_variants} variants × {len(images)} = {class_total_generated} augmented images")
+
+    print("\n" + "=" * 70)
+    print("Augmentation Complete!")
+    print("=" * 70)
+    print(f"Original images:   {total_originals}")
+    print(f"Augmented variants: {total_generated}")
+    print(f"Total images:      {total_originals + total_generated}")
+    print(f"Expansion factor:  {1 + (total_generated / total_originals if total_originals > 0 else 0):.1f}x")
+    print("=" * 70)
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Augment dataset to expand number of images')
+    parser.add_argument('--input-dir', required=True,
+                        help='Input directory (data/raw or data/processed)')
+    parser.add_argument('--output-dir', default=None,
+                        help='Output directory (default: input_dir_augmented)')
+    parser.add_argument('--variants', type=int, default=10,
+                        help='Number of augmented variants per image (default: 10)')
+    parser.add_argument('--in-place', action='store_true',
+                        help='Add augmented images to same directory instead of creating new one')
+
+    args = parser.parse_args()
+
+    augment_dataset(
+        input_dir=args.input_dir,
+        output_dir=args.output_dir,
+        num_variants=args.variants,
+        augment_in_place=args.in_place
+    )
+```
+
+
 
 ## Demo
 
-<!-- Insert demo -->
+## **Training Result**
+
+![Demo Sistem](../training_result.jpg)
+
+Evaluasi model dilakukan menggunakan dataset yang terdiri dari 70 gambar untuk masing-masing kelas (Medium, Normal, dan Severe). Dataset tersebut dibagi dengan skema pembagian 70% untuk training, 15% untuk testing, dan 15% untuk validasi. Tujuannya adalah memperkaya variasi data pembelajaran, data training juga telah melalui proses augmentasi sebesar 10 kali lipat.
+
+Berdasarkan hasil pengujian pada data test, model menunjukkan potensi yang baik pada skala eksperimen terbatas. Pada kelas Medium, model berhasil memprediksi 10 foto berlabel "medium" dengan tepat, di mana terdapat 0 kesalahan prediksi ke "normal" dan 2 kesalahan prediksi ke "severe". Pada kelas Normal, model mencapai akurasi sempurna dengan memprediksi 11 foto berlabel "normal", tanpa ada kesalahan ke kelas "medium" maupun "severe". Terakhir, pada kelas Severe, model berhasil memprediksi 10 foto berlabel "severe", dengan 0 kesalahan ke "medium" dan 0 kesalahan ke "normal".
+
+![Demo Sistem](../training_resul2.jpg)
+
+Berdasarkan hasil training tersebut, model sangat cepat belajar dan mencapai akurasi hampir sempurna dengan Epoch 0-5 yang naik dengan cepat dari 78%  menuju 97%, serta Epoch 5-23 yang stabil. Selain itu, model juga semakin yakin dan semakin sedikit melakukan kesalahan di data training.
+
+## **Training Demo**
+
+```bash
+============================================================
+Training Complete!
+============================================================
+Model saved to models/trained_model.keras
+
+Evaluating model...
+============================================================
+Evaluating Model
+============================================================
+1/2 ━━━━━━━━━━━━━━━━━━━━ 4s 4s/step2025-12-14 18:02:05.979695: E external/local_xla/xla/stream_executor/cuda/cuda_timer.cc:86] Delay kernel timed out: measured time has sub-optimal accuracy. There may be a missing warmup execution, please investigate in Nsight Systems.
+2025-12-14 18:02:06.167900: E external/local_xla/xla/stream_executor/cuda/cuda_timer.cc:86] Delay kernel timed out: measured time has sub-optimal accuracy. There may be a missing warmup execution, please investigate in Nsight Systems.
+2/2 ━━━━━━━━━━━━━━━━━━━━ 13s 9s/step
+
+Classification Report:
+              precision    recall  f1-score   support
+
+      medium       1.00      0.83      0.91        12
+      normal       1.00      1.00      1.00        11
+      severe       0.83      1.00      0.91        10
+
+    accuracy                           0.94        33
+   macro avg       0.94      0.94      0.94        33
+weighted avg       0.95      0.94      0.94        33
+
+
+Metrics:
+  accuracy: 0.9394
+  precision: 0.9495
+  recall: 0.9394
+  f1: 0.9394
+2/2 ━━━━━━━━━━━━━━━━━━━━ 0s 12ms/step 
+
+Confusion Matrix:
+[[10  0  2]
+ [ 0 11  0]
+ [ 0  0 10]]
+
+Generating visualizations...
+Training history saved to models/training_history.png
+Confusion matrix saved to models/confusion_matrix.png
+
+======================================================================
+TRAINING COMPLETE!
+======================================================================
+
+Results saved to: ./models/
+   - trained_model.keras: Final trained model
+   - best_model.keras: Best checkpoint during training
+   - training_history.png: Accuracy and loss curves
+   - confusion_matrix.png: Model predictions analysis
+
+Model Performance:
+   - Accuracy: 0.9394
+   - Precision: 0.9495
+   - Recall: 0.9394
+   - F1: 0.9394
+
+Process finished with exit code 0
+```
+
+Sistem mengambil semua foto dari folder `bppselatanpredik/` kemudian dengan model AI yang telah dilatih sebelumnya akan membaca foto satu per satu. Model akan menebak tingkat kerusakan jalan dan mengklasifikasikannya ke tiga kelas yaitu medium, normal, atau severe. Setelah itu, sistem akan mengambil foto dengan metadata dan menandainya di peta interaktif dengan warna pin  berbeda-beda sesuai kelasnya.
+
+## **Predict Demo**
+
+![Demo Sistem](../predict.gif)
+
+## **Map Demo**
+
+![Demo Sistem](../map_demo4.gif)
 
 ## Summary
 
-<!-- Insert summary -->
+Sistem Mapping Jalan Berlubang di Kalimantan menggunakan metode CNN sistem ini mampu mengklasifikasikan tingkat keparahan jalan berlubang menjadi tiga kelas yaitu medium, normal, dan severe. Sistem juga mampu untuk menandai letak lubang dari foto yang diinput ke peta interaktif agar mempermudah pengguna untuk menemukannya. Secara keseluruhan, sistem yang dikembangkan menunjukkan bahwa metode CNN dengan model MobileNetV2 efektif untuk mengklasifikasikan jenis jalan berlubang di Kalimantan dan dapat dikembangkan lebih lanjut sebagai pendukung pemeliharaan infrastruktur jalanan.
 
 ## References
 
-<!-- Insert references -->
+**Sumartha, N. N. C., Wijaya, I. G. P. S., & Bimantoro, F. (2024)**. Klasifikasi Citra Lubang pada Permukaan Jalan Beraspal dengan Metode Convolutional Neural Networks (CNN). *Journal of Computer Science and Informatics Engineering (J-Cosine), 8*(1).
+
+**Sandler, M., Howard, A., Zhu, M., Zhmoginov, A., & Chen, L. C. (2018)**. Mobilenetv2: Inverted residuals and linear bottlenecks. In *Proceedings of the IEEE conference on computer vision and pattern recognition* (pp. 4510-4520).
+
+**Xiang, Q., Wang, X., Li, R., Zhang, G., Lai, J., & Hu, Q. (2019, October)**. Fruit image classification based on Mobilenetv2 with transfer learning technique. In *Proceedings of the 3rd international conference on computer science and application engineering* (pp. 1-7).
