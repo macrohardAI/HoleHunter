@@ -1,163 +1,269 @@
-# HoleHunter
+# HoleHunter2
 
-An Introduction to AI project that uses Convolutional Neural Network (CNN) to classify road holes by using set of pictures.
+## Sistem Deteksi dan Pemetaan Jalan Berlubang di Kalimantan
 
-## 🧩 Features
+Sistem deteksi otomatis untuk mengidentifikasi dan memetakan kerusakan jalan menggunakan deep learning berbasis **MobileNetV2**. Proyek ini mengklasifikasikan tingkat kerusakan jalan menjadi tiga kategori: **Normal**, **Medium**, dan **Severe**.
 
-- Binary classification (hole/no hole)
-- GPS metadata extraction from images
-- Location data storage in SQLite database
+---
 
-## 🚀 Getting Started
+## Tim Pengembang
 
-### Clone the repository
+| Nama                   | NIM      |
+| ---------------------- | -------- |
+| Andi Naufal Nurfadhil  | 11241014 |
+| Kevin Jonathan Wijaya  | 11241040 |
+| Muhammad Aditya Putra  | 11241050 |
+| Rana Afifah Dzikro     | 11241076 |
+| Sulthan Farizan Fawwaz | 11241080 |
+
+---
+
+## Daftar Isi
+
+* [Tentang Proyek](#tentang-proyek)
+* [Fitur Utama](#fitur-utama)
+* [Teknologi](#teknologi)
+* [Instalasi](#instalasi)
+* [Penggunaan](#penggunaan)
+* [Struktur Proyek](#struktur-proyek)
+* [Konfigurasi](#konfigurasi)
+* [Hasil](#hasil)
+* [Dokumentasi](#dokumentasi)
+
+---
+
+## Tentang Proyek
+
+**HoleHunter2** adalah sistem berbasis kecerdasan buatan yang dirancang untuk mendeteksi dan memetakan kondisi jalan di Kalimantan. Sistem ini menggunakan arsitektur **MobileNetV2** yang dioptimalkan untuk klasifikasi gambar dengan tiga tingkat kerusakan:
+
+* **Normal** — Jalan dalam kondisi baik
+* **Medium** — Kerusakan tingkat sedang
+* **Severe** — Kerusakan parah dan berbahaya
+
+Sistem mendukung pemrosesan gambar tunggal maupun batch, serta menghasilkan peta interaktif berbasis HTML untuk visualisasi lokasi kerusakan.
+
+---
+
+## Fitur Utama
+
+* Deteksi otomatis tingkat kerusakan jalan berbasis deep learning
+* Pemetaan interaktif menggunakan peta HTML
+* Data augmentation untuk meningkatkan generalisasi model
+* Evaluasi model lengkap (confusion matrix dan metrik performa)
+* Prediksi batch untuk efisiensi pemrosesan
+* Checkpoint model terbaik selama training
+
+---
+
+## Teknologi
+
+### Framework dan Library
+
+* TensorFlow / Keras
+* MobileNetV2 (Transfer Learning)
+* NumPy dan Pandas
+* Pillow
+* Matplotlib
+* Seaborn
+* Folium
+
+### Konfigurasi Model
+
+* Input Size: 224 × 224 piksel
+* Batch Size: 32
+* Epochs: 80
+* Learning Rate: 0.001
+* Class Weights: Balanced
+
+---
+
+## Instalasi
+
+### 1. Clone Repository
 
 ```bash
-git clone https://github.com/macrohardAI/HoleHunter.git
-cd HoleHunter
+git clone <repository-url>
+cd holehunter2
 ```
 
-Or if using SSH:
+### 2. Virtual Environment (Direkomendasikan)
 
 ```bash
-git clone git@github.com:macrohardAI/HoleHunter.git
-cd HoleHunter
+python -m venv venv
+source venv/bin/activate   # Linux / macOS
+venv\Scripts\activate      # Windows
 ```
 
-### Installation
-
-- Install and set Python 3.12
-    ```bash
-    pyenv install 3.12
-    pyenv local 3.12
-
-    # Verify installation
-    python --version # should be 3.12
-    ```
-
-> [!TIP]
-> See [Pyenv installation docs](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation) if you haven't install it on your system.
-
-- Create YOUR OWN virtual environment
-    ```bash
-    python -m venv .venv
-
-    # Activate virtual environment
-    source .venv/bin/activate
-    
-    # Or on Windows:
-    .venv\Scripts\activate
-    ```
-
-- Install dependencies
-    ```bash
-    # Upgrade pip
-    pip install --upgrade pip
-
-    # Install required packages
-    pip install -r requirements.txt
-    ```
-
-## 🔧 Usage
+### 3. Install Dependencies
 
 ```bash
-# Train model
-python src/models/train.py
-
-# Run prediction
-python app/predict.py --image path/to/image.jpg
+pip install -r requirements.txt
 ```
 
-## ✏️ Making Changes
+### 4. Persiapan Dataset
+
+Struktur folder dataset:
+
+```text
+data/
+├── raw/
+│   ├── normal/
+│   ├── medium/
+│   └── severe/
+└── processed/
+    ├── train/
+    ├── validation/
+    └── test/
+```
+
+Letakkan dataset gambar mentah pada folder `data/raw/` sesuai kelasnya.
+
+---
+
+## Penggunaan
+
+### 1. Persiapan Dataset
 
 ```bash
-# Checkouting to a new branch
-git checkout -b <branch_name>
-
-# Make your changes...
-
-# It's best to pull first when you work with others within the same branch to avoid conflict
-git pull
-
-# Stages changed file to git
-git add <file1> <file2> ...
-
-# Commit your change
-git commit -m "<short description about this change>"
-
-# Push your commit to remote branch
-git push origin <branch_name>
+python data_preparation.py
 ```
 
-## 📂 Project Structure
+### 2. Data Augmentation
 
+```bash
+python src/data/augmentation.py data/processed/train --variants <jumlah>
 ```
-HoleHunter/
-│
-├── data/
-│   ├── raw/                    # Original, unprocessed images
-│   │   ├── hole/
-│   │   └── no_hole/
-│   ├── processed/              # Preprocessed images (resized, augmented)
-│   │   ├── train/
-│   │   │   ├── hole/
-│   │   │   └── no_hole/
-│   │   ├── validation/
-│   │   │   ├── hole/
-│   │   │   └── no_hole/
-│   │   └── test/
-│   │       ├── hole/
-│   │       └── no_hole/
-│   └── sample/                 # Sample images for testing/demo
-│
-├── models/
-│   ├── saved_models/           # Trained model files (.h5, .keras)
-│   └── checkpoints/            # Training checkpoints
-│
-├── notebooks/
-│   ├── 01_data_exploration.ipynb
-│   ├── 02_model_training.ipynb
-│   └── 03_evaluation.ipynb
+
+Setelah augmentasi, pastikan struktur folder training sudah konsisten sebelum proses training dimulai.
+
+### 3. Training Model
+
+```bash
+python train.py
+```
+
+Output training:
+
+* `models/trained_model.keras`
+* `models/best_model.keras`
+* `models/training_history.png`
+* `models/confusion_matrix.png`
+
+### 4. Prediksi
+
+**Prediksi satu gambar**
+
+```bash
+python predict.py --image path/to/image.jpg
+```
+
+**Prediksi batch (folder)**
+
+```bash
+python predict.py --batch path/to/folder
+```
+
+**Custom model**
+
+```bash
+python predict.py --model models/best_model.keras --image test.jpg
+```
+
+Output prediksi:
+
+* Kelas dan confidence score
+* File peta interaktif: `laporan_peta_kerusakan.html`
+* Visualisasi hasil prediksi
+
+---
+
+## Struktur Proyek
+
+```text
+holehunter2/
+├── config.py
+├── data_preparation.py
+├── train.py
+├── predict.py
+├── test.py
+├── requirements.txt
 │
 ├── src/
-│   ├── __init__.py
 │   ├── data/
-│   │   ├── __init__.py
-│   │   ├── dataset.py          # Dataset loading and preprocessing
-│   │   └── augmentation.py     # Data augmentation functions
+│   │   ├── augmentation.py
+│   │   ├── loader.py
+│   │   └── preprocessor.py
 │   ├── models/
-│   │   ├── __init__.py
-│   │   ├── cnn_model.py        # CNN architecture definition
-│   │   └── train.py            # Training script
-│   ├── utils/
-│   │   ├── __init__.py
-│   │   ├── metadata.py         # EXIF/GPS extraction
-│   │   └── visualization.py    # Plotting and visualization
-│   └── database/
-│       ├── __init__.py
-│       ├── db_manager.py       # Database operations
-│       └── schema.sql          # Database schema
+│   │   ├── model_builder.py
+│   │   ├── trainer.py
+│   │   └── evaluator.py
+│   └── helpers/
+│       ├── visualizer.py
+│       └── map_generator.py
 │
-├── tests/
-│   ├── __init__.py
-│   ├── test_model.py
-│   └── test_metadata.py
-│
-├── scripts/
-│   ├── download_dataset.py     # Script to download/prepare dataset
-│   ├── preprocess_data.py      # Preprocessing pipeline
-│   └── evaluate_model.py       # Model evaluation
-│
-├── database/
-│   └── holes.db                # SQLite database (gitignored)
-│
-├── app/
-│   └── predict.py              # Main application for prediction
-│
-├── requirements.txt            # Python dependencies
-├── README.md                   # Project documentation
-├── .gitignore                  # Git ignore file
-├── .python-version             # Python version info
-├── config.py                   # Configuration parameters
-└── setup.py                    # Package installation (optional)
+├── data/
+│   ├── raw/
+│   └── processed/
+├── models/
+└── docs/
+    └── REPORT.md
 ```
+
+---
+
+## Konfigurasi
+
+Edit file `config.py`:
+
+```python
+class Config:
+    DATA_DIR = "./data"
+    MODEL_DIR = "./models"
+
+    IMG_SIZE = (224, 224)
+    BATCH_SIZE = 32
+    EPOCHS = 80
+    LEARNING_RATE = 0.001
+
+    BASE_MODEL = "mobilenetv2"
+    CLASS_NAMES = ["medium", "normal", "severe"]
+    CLASS_WEIGHTS = {0: 1.0, 1: 1.5, 2: 2.5}
+```
+
+---
+
+## Hasil
+
+Model menunjukkan performa yang baik dalam mengklasifikasikan tingkat kerusakan jalan. Evaluasi lengkap tersedia dalam file hasil training.
+
+Output utama:
+
+* Grafik akurasi dan loss
+* Confusion matrix
+* Peta interaktif lokasi kerusakan
+
+---
+
+## Dokumentasi
+
+Dokumentasi teknis lengkap tersedia pada:
+
+* `docs/REPORT.md`
+
+---
+
+## Lisensi
+
+Proyek ini dikembangkan untuk keperluan akademik.
+
+---
+
+## Kontribusi
+
+Saran dan kontribusi dipersilakan melalui issue atau pull request.
+
+---
+
+## Kontak
+
+Silakan hubungi tim pengembang untuk diskusi dan pertanyaan lanjutan.
